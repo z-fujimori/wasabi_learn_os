@@ -20,6 +20,7 @@ struct EfiGuid {
     pub data2: u16,
     pub data3: [u8; 8],
 }
+// UEFI仕様書に書いてある「EFI Graphics Output Protocol」のGUIDの値
 const EFI_GRAPHICS_OUTPUT_PROTOCOL_GUID: EfiGuid = EfiGuid {
     data0: 0x9042a9de,
     data1: 0x23dc,
@@ -44,7 +45,8 @@ struct EfiBootServicesTable {
     ) -> EfiStatus,
 }
 const _: () = assert!(offset_of!(EfiBootServicesTable, locate_protocol) == 320);
-
+// efi_main()の第二引数に渡されるEfi System Tableからlocate_protocol()のアドレスを得る
+// EFI System Tableの中のEFI Boot Services Tableの中に書かれている
 #[repr(C)]
 struct EfiSystemTable {
     _reserved0: [u64; 12],
@@ -100,9 +102,11 @@ fn efi_main(_image_handle: EfiHandle, efi_system_table: &EfiSystemTable) {
     let efi_graphics_output_protocol = locate_graphic_protocol(efi_system_table).unwrap();
     let vram_addr = efi_graphics_output_protocol.mode.frame_buffer_base;
     let vram_byte_size = efi_graphics_output_protocol.mode.frame_buffer_size;
+    // フレームバッファを取得
     let vram = unsafe {
         slice::from_raw_parts_mut(vram_addr as *mut u32 , vram_byte_size / size_of::<u32>())
     };
+    // フレームバッファの全ピクセルを白色に塗る
     for e in vram {
         *e = 0xffffff;
     }
