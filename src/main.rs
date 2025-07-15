@@ -1,7 +1,10 @@
-#![no_std]  // stdクレートは使わないという強い意志。
-#![no_main]  // no_stdだとmain()関数がstart(どの関数をはじめに実行するかを指定)の役割を果たしてる。
+#![no_std] // stdクレートは使わないという強い意志。
+#![no_main]
+// no_stdだとmain()関数がstart(どの関数をはじめに実行するかを指定)の役割を果たしてる。
 #![feature(offset_of)]
 
+use core::arch::asm; // HLT命令を呼び出す関数をインラインアセンブリで記述したい
+use core::cmp::min;
 use core::mem::offset_of;
 use core::mem::size_of;
 use core::panic::PanicInfo;
@@ -25,7 +28,7 @@ const EFI_GRAPHICS_OUTPUT_PROTOCOL_GUID: EfiGuid = EfiGuid {
     data0: 0x9042a9de,
     data1: 0x23dc,
     data2: 0x4a38,
-    data3: [0x96, 0xfb, 0x7a, 0xde, 0xd0, 0x80, 0x51, 0x6a]
+    data3: [0x96, 0xfb, 0x7a, 0xde, 0xd0, 0x80, 0x51, 0x6a],
 };
 
 #[derive(Debug, PartialEq, Eq, Copy, Clone)]
@@ -40,7 +43,7 @@ struct EfiBootServicesTable {
     _reserved0: [u64; 40],
     locate_protocol: extern "win64" fn(
         protocol: *const EfiGuid,
-        registration: *const EfiVoid, 
+        registration: *const EfiVoid,
         interface: *mut *mut EfiVoid,
     ) -> EfiStatus,
 }
@@ -61,8 +64,8 @@ struct EfiGraphicsOutputProtocolMode<'a> {
     pub mode: u32,
     pub info: &'a EfiGraphicsOutputProtocolPixelInfo,
     pub size_of_info: u64,
-    pub frame_buffer_base: usize,  // 画面に表示されるピクセルの情報が並んだフレームバッファの開始アドレス
-    pub frame_buffer_size: usize,  // フレームバッファのバイト単位での大きさ
+    pub frame_buffer_base: usize, // 画面に表示されるピクセルの情報が並んだフレームバッファの開始アドレス
+    pub frame_buffer_size: usize, // フレームバッファのバイト単位での大きさ
 }
 
 #[repr(C)]
@@ -71,8 +74,8 @@ struct EfiGraphicsOutPutProtocol<'a> {
     reserved: [u64; 3],
     pub mode: &'a EfiGraphicsOutputProtocolMode<'a>,
 }
-fn locate_graphic_protocol<'a> (
-    efi_system_table: &EfiSystemTable
+fn locate_graphic_protocol<'a>(
+    efi_system_table: &EfiSystemTable,
 ) -> Result<&'a EfiGraphicsOutPutProtocol<'a>> {
     let mut graphic_output_protocol = null_mut::<EfiGraphicsOutPutProtocol>();
     let status = (efi_system_table.boot_services.locate_protocol)(
@@ -81,7 +84,7 @@ fn locate_graphic_protocol<'a> (
         &mut graphic_output_protocol as *mut *mut EfiGraphicsOutPutProtocol as *mut *mut EfiVoid,
     );
     if status != EfiStatus::Success {
-        return  Err("Failed to locate graphics output protocol");
+        return Err("Failed to locate graphics output protocol");
     }
     Ok(unsafe { &*graphic_output_protocol })
 }
@@ -90,32 +93,154 @@ fn locate_graphic_protocol<'a> (
 #[derive(Debug)]
 struct EfiGraphicsOutputProtocolPixelInfo {
     version: u32,
-    pub horizontal_resolution: u32,  // 水平方向の画素数
-    pub vertical_resolution: u32,  // 垂直方向の画素数
+    pub horizontal_resolution: u32, // 水平方向の画素数
+    pub vertical_resolution: u32,   // 垂直方向の画素数
     _padding0: [u32; 5],
     pub pixels_per_scan_line: u32,
 }
 const _: () = assert!(size_of::<EfiGraphicsOutputProtocolPixelInfo>() == 36);
 
+pub fn hlt() {
+    unsafe { asm!("hlt") }
+}
+
 #[no_mangle]
 fn efi_main(_image_handle: EfiHandle, efi_system_table: &EfiSystemTable) {
-    let efi_graphics_output_protocol = locate_graphic_protocol(efi_system_table).unwrap();
-    let vram_addr = efi_graphics_output_protocol.mode.frame_buffer_base;
-    let vram_byte_size = efi_graphics_output_protocol.mode.frame_buffer_size;
-    // フレームバッファを取得
-    let vram = unsafe {
-        slice::from_raw_parts_mut(vram_addr as *mut u32 , vram_byte_size / size_of::<u32>())
-    };
-    // フレームバッファの全ピクセルを白色に塗る
-    for e in vram {
-        *e = 0xffffff;
+    let mut vram = init_vram(efi_system_table).expect("init_vram failed");
+    let vw = vram.width;
+    let vh = vram.height;
+    fill_rect(&mut vram, 0x000000, 0, 0, vw, vh).expect("fill_rect failed");
+    fill_rect(&mut vram, 0xff0000, 32, 32, 32, 32).expect("fill_rect failed");
+    fill_rect(&mut vram, 0x00ff00, 64, 64, 64, 64).expect("fill_rect failed");
+    fill_rect(&mut vram, 0x00ff00, 64, 64, 64, 64).expect("fill_rect failed");
+    fill_rect(&mut vram, 0x0000ff, 128, 128, 128, 128).expect("fill_rect failed");
+    for i in 0..256 {
+        let _ = draw_point(&mut vram, 0x010101 * i as u32, i, i);
     }
 
     // println!("Hello, world!");
-    loop{}
+    loop {
+        hlt() // 空のloopだとCPUサイクルを消費してしまうので、HLT命令で割り込みが来るまで休ませる
+    }
 }
 
 #[panic_handler]
 fn panic(_info: &PanicInfo) -> ! {
-    loop{}
+    loop {
+        hlt() // 空のloopだとCPUサイクルを消費してしまうので、HLT命令で割り込みが来るまで休ませる
+    }
+}
+
+trait Bitmap {
+    fn bytes_per_pixel(&self) -> i64;
+    fn pixels_per_line(&self) -> i64;
+    fn width(&self) -> i64;
+    fn height(&self) -> i64;
+    fn buf_mut(&mut self) -> *mut u8;
+    /// # Safety
+    /// 
+    /// Returned pointer is valid as long as the given coordinates are valid which means that passing is_in_*_range tests. 
+    /// 返されるポインタは、与えられた座標が有効である限り有効であり、is_in_*_rangeテストをパスすることを意味する。
+    unsafe fn unchecked_pixel_at_mut(&mut self, x: i64, y: i64) -> *mut u32 {
+        self.buf_mut().add(
+            ((y * self.pixels_per_line() + x) * self.bytes_per_pixel()) as usize,
+        ) as *mut u32
+    }
+    fn pixel_at_mut(&mut self, x:i64, y:i64) -> Option<&mut u32> {
+        if self.is_in_x_range(x) && self.is_in_y_range(y) {
+            // SAFETY: (x,y) is always validated by the checks above. 上記によりx,yは常に安全
+            unsafe {Some(&mut *(self.unchecked_pixel_at_mut(x, y)))}
+        } else {
+            None
+        }
+    }
+    fn is_in_x_range(&self, px:i64) -> bool {
+        0 <= px && px < min(self.width(), self.pixels_per_line())
+    }
+    fn is_in_y_range(&self, py:i64) -> bool {
+        0 <= py && py < self.height()
+    }
+}
+
+#[derive(Clone, Copy)]
+struct VramBufferInfo {
+    buf: *mut u8,
+    width: i64,
+    height: i64,
+    pixels_per_line: i64,
+}
+
+impl Bitmap for VramBufferInfo {
+    fn bytes_per_pixel(&self) -> i64 {
+        4
+    }
+    fn pixels_per_line(&self) -> i64 {
+        self.pixels_per_line
+    }
+    fn width(&self) -> i64 {
+        self.width
+    }
+    fn height(&self) -> i64 {
+        self.height
+    }
+    fn buf_mut(&mut self) -> *mut u8 {
+        self.buf
+    }
+}
+
+fn init_vram(efi_system_table: &EfiSystemTable) -> Result<VramBufferInfo> {
+    let gp = locate_graphic_protocol(efi_system_table)?;
+    Ok(VramBufferInfo { 
+        buf: gp.mode.frame_buffer_base as *mut u8, 
+        width: gp.mode.info.horizontal_resolution as i64, 
+        height: gp.mode.info.vertical_resolution as i64, 
+        pixels_per_line: gp.mode.info.pixels_per_scan_line as i64,
+    })
+}
+
+/// # Safety
+/// 
+/// (x,y) must be a valid point in the buf.
+unsafe fn unchecked_draw_point<T: Bitmap> (
+    buf: &mut T,
+    color: u32,
+    x: i64,
+    y: i64,
+) {
+    *buf.unchecked_pixel_at_mut(x, y) = color;
+}
+
+fn draw_point<T: Bitmap> (
+    buf: &mut T,
+    color: u32,
+    x: i64,
+    y: i64,
+) -> Result<()> {
+    *(buf.pixel_at_mut(x, y).ok_or("Out of Range")?) = color;
+    Ok(())
+}
+
+fn fill_rect<T: Bitmap> (
+    buf: &mut T,
+    color: u32,
+    px: i64,
+    py: i64,
+    w: i64,
+    h: i64
+) -> Result<()> {
+    if !buf.is_in_x_range(px)
+        || !buf.is_in_y_range(py)
+        || !buf.is_in_x_range(px + w - 1)
+        || !buf.is_in_y_range(py + h - 1)
+    {
+        return Err("Out of Range");
+    }
+    for y in py..py+h {
+        for x in px..px+w {
+            unsafe {
+                unchecked_draw_point(buf, color, x, y);
+            }
+        }
+    }
+    Ok(())
 }
