@@ -1,9 +1,8 @@
-#![no_std] // stdクレートは使わないという強い意志。
+#![no_std]
 #![no_main]
-// no_stdだとmain()関数がstart(どの関数をはじめに実行するかを指定)の役割を果たしてる。
 #![feature(offset_of)]
 
-use core::arch::asm; // HLT命令を呼び出す関数をインラインアセンブリで記述したい
+use core::arch::asm;
 use core::cmp::min;
 use core::fmt;
 use core::fmt::Write;
@@ -25,7 +24,7 @@ struct EfiGuid {
     pub data2: u16,
     pub data3: [u8; 8],
 }
-// UEFI仕様書に書いてある「EFI Graphics Output Protocol」のGUIDの値
+
 const EFI_GRAPHICS_OUTPUT_PROTOCOL_GUID: EfiGuid = EfiGuid {
     data0: 0x9042a9de,
     data1: 0x23dc,
@@ -70,6 +69,7 @@ struct EfiMemoryDescriptor {
     number_of_pages: u64,
     attribute: u64,
 }
+
 const MEMORY_MAP_BUFFER_SIZE: usize = 0x8000;
 
 struct MemoryMapHolder {
@@ -90,13 +90,15 @@ impl<'a> Iterator for MemoryMapIterator<'a> {
             None
         } else {
             let e: &EfiMemoryDescriptor = unsafe {
-                &*(self.map.memory_map_buffer.as_ptr().add(self.ofs) as *const EfiMemoryDescriptor)
+                &*(self.map.memory_map_buffer.as_ptr().add(self.ofs)
+                    as *const EfiMemoryDescriptor)
             };
             self.ofs += self.map.descriptor_size;
             Some(e)
         }
     }
 }
+
 impl MemoryMapHolder {
     pub const fn new() -> MemoryMapHolder {
         MemoryMapHolder {
@@ -115,17 +117,19 @@ impl MemoryMapHolder {
 #[repr(C)]
 struct EfiBootServicesTable {
     _reserved0: [u64; 7],
-    get_memory_map: extern "win64" fn (
+    get_memory_map: extern "win64" fn(
         memory_map_size: *mut usize,
         memory_map: *mut u8,
         map_key: *mut usize,
         descriptor_size: *mut usize,
         descriptor_version: *mut u32,
     ) -> EfiStatus,
-    _reserved1: [u64; 21],
-    exit_boot_services: extern "win64" fn (_image_handle: EfiHandle, map_key: usize) -> EfiStatus,
-
-    _reserved4: [u64; 10],
+    _reserved1: [u64; 32],
+    // _reserved1: [u64; 21],
+    // exit_boot_services:
+    //     extern "win64" fn(image_handle: EfiHandle, map_key: usize) -> EfiStatus,
+    
+    // _reserved4: [u64; 10],
     locate_protocol: extern "win64" fn(
         protocol: *const EfiGuid,
         registration: *const EfiVoid,
@@ -134,7 +138,7 @@ struct EfiBootServicesTable {
 }
 impl EfiBootServicesTable {
     fn get_memory_map(&self, map: &mut MemoryMapHolder) -> EfiStatus {
-        (self.get_memory_map) (
+        (self.get_memory_map)(
             &mut map.memory_map_size,
             map.memory_map_buffer.as_mut_ptr(),
             &mut map.map_key,
@@ -144,10 +148,8 @@ impl EfiBootServicesTable {
     }
 }
 const _: () = assert!(offset_of!(EfiBootServicesTable, get_memory_map) == 56);
-const _: () = assert!(offset_of!(EfiBootServicesTable, exit_boot_services) == 232);
 const _: () = assert!(offset_of!(EfiBootServicesTable, locate_protocol) == 320);
-// efi_main()の第二引数に渡されるEfi System Tableからlocate_protocol()のアドレスを得る
-// EFI System Tableの中のEFI Boot Services Tableの中に書かれている
+
 #[repr(C)]
 struct EfiSystemTable {
     _reserved0: [u64; 12],
@@ -157,29 +159,41 @@ const _: () = assert!(offset_of!(EfiSystemTable, boot_services) == 96);
 
 #[repr(C)]
 #[derive(Debug)]
+struct EfiGraphicsOutputProtocolPixelInfo {
+    version: u32,
+    pub horizontal_resolution: u32,
+    pub vertical_resolution: u32,
+    _padding0: [u32; 5],
+    pub pixels_per_scan_line: u32,
+}
+const _: () = assert!(size_of::<EfiGraphicsOutputProtocolPixelInfo>() == 36);
+
+#[repr(C)]
+#[derive(Debug)]
 struct EfiGraphicsOutputProtocolMode<'a> {
     pub max_mode: u32,
     pub mode: u32,
     pub info: &'a EfiGraphicsOutputProtocolPixelInfo,
     pub size_of_info: u64,
-    pub frame_buffer_base: usize, // 画面に表示されるピクセルの情報が並んだフレームバッファの開始アドレス
-    pub frame_buffer_size: usize, // フレームバッファのバイト単位での大きさ
+    pub frame_buffer_base: usize,
+    pub frame_buffer_size: usize,
 }
 
 #[repr(C)]
 #[derive(Debug)]
-struct EfiGraphicsOutPutProtocol<'a> {
+struct EfiGraphicsOutputProtocol<'a> {
     reserved: [u64; 3],
     pub mode: &'a EfiGraphicsOutputProtocolMode<'a>,
 }
 fn locate_graphic_protocol<'a>(
     efi_system_table: &EfiSystemTable,
-) -> Result<&'a EfiGraphicsOutPutProtocol<'a>> {
-    let mut graphic_output_protocol = null_mut::<EfiGraphicsOutPutProtocol>();
+) -> Result<&'a EfiGraphicsOutputProtocol<'a>> {
+    let mut graphic_output_protocol = null_mut::<EfiGraphicsOutputProtocol>();
     let status = (efi_system_table.boot_services.locate_protocol)(
         &EFI_GRAPHICS_OUTPUT_PROTOCOL_GUID,
         null_mut::<EfiVoid>(),
-        &mut graphic_output_protocol as *mut *mut EfiGraphicsOutPutProtocol as *mut *mut EfiVoid,
+        &mut graphic_output_protocol as *mut *mut EfiGraphicsOutputProtocol
+            as *mut *mut EfiVoid,
     );
     if status != EfiStatus::Success {
         return Err("Failed to locate graphics output protocol");
@@ -187,23 +201,12 @@ fn locate_graphic_protocol<'a>(
     Ok(unsafe { &*graphic_output_protocol })
 }
 
-#[repr(C)]
-#[derive(Debug)]
-struct EfiGraphicsOutputProtocolPixelInfo {
-    version: u32,
-    pub horizontal_resolution: u32, // 水平方向の画素数
-    pub vertical_resolution: u32,   // 垂直方向の画素数
-    _padding0: [u32; 5],
-    pub pixels_per_scan_line: u32,
-}
-const _: () = assert!(size_of::<EfiGraphicsOutputProtocolPixelInfo>() == 36);
-
 pub fn hlt() {
     unsafe { asm!("hlt") }
 }
 
 #[no_mangle]
-fn efi_main(image_handle: EfiHandle, efi_system_table: &EfiSystemTable) {
+fn efi_main(_image_handle: EfiHandle, efi_system_table: &EfiSystemTable) {
     let mut vram = init_vram(efi_system_table).expect("init_vram failed");
     let vw = vram.width;
     let vh = vram.height;
@@ -214,7 +217,9 @@ fn efi_main(image_handle: EfiHandle, efi_system_table: &EfiSystemTable) {
         writeln!(w, "i = {i}").unwrap();
     }
     let mut memory_map = MemoryMapHolder::new();
-    let status = efi_system_table.boot_services.get_memory_map(&mut memory_map);
+    let status = efi_system_table
+        .boot_services
+        .get_memory_map(&mut memory_map);
     writeln!(w, "{status:?}").unwrap();
     let mut total_memory_pages = 0;
     for e in memory_map.iter() {
@@ -225,7 +230,12 @@ fn efi_main(image_handle: EfiHandle, efi_system_table: &EfiSystemTable) {
         writeln!(w, "{e:?}").unwrap();
     }
     let total_memory_size_mib = total_memory_pages * 4096 / 1024 / 1024;
-    writeln!(w, "Total: {total_memory_pages} pages = {total_memory_size_mib} MiB").unwrap();
+    writeln!(
+        w,
+        "Total: {total_memory_pages} pages = {total_memory_size_mib} MiB"
+    )
+    .unwrap();
+    //println!("Hello, world!");
     exit_from_efi_boot_services(
         image_handle,
         efi_system_table,
@@ -233,82 +243,7 @@ fn efi_main(image_handle: EfiHandle, efi_system_table: &EfiSystemTable) {
     );
     writeln!(w, "Hello, Non-UEFI world!").unwrap();
     loop {
-        hlt() // 空のloopだとCPUサイクルを消費してしまうので、HLT命令で割り込みが来るまで休ませる
-    }
-}
-
-fn lookup_font(c: char) -> Option<[[char; 8]; 16]> {
-    const FONT_SOURCE: &str = include_str!("./font.txt");
-    if let Ok(c) = u8::try_from(c) {
-        let mut fi = FONT_SOURCE.split('\n');
-        while let Some(line) = fi.next() {
-            if let Some(line) = line.strip_prefix("0x") {
-                if let Ok(idx) = u8::from_str_radix(line, 16) {
-                    if idx != c {
-                        continue;
-                    }
-                    let mut font = [['*'; 8]; 16];
-                    for (y, line) in fi.clone().take(16).enumerate() {
-                        for (x, c) in line.chars().enumerate() {
-                            if let Some(e) = font[y].get_mut(x) {
-                                *e = c;
-                            }
-                        }
-                    }
-                    return Some(font);
-                }
-            }
-        }
-    }
-    None
-}
-
-fn draw_font_fg<T: Bitmap>(buf: &mut T, x: i64, y: i64, color: u32, c: char) {
-    if let Some(font) = lookup_font(c) {
-        for (dy, row) in font.iter().enumerate(){
-            for (dx, pixel) in row.iter().enumerate() {
-                let color = match pixel {
-                    '*' => color,
-                    _ => continue,
-                };
-                let _ = draw_point(buf, color, x + dx as i64, y + dy as i64);
-            }
-        }
-    }
-}
-
-fn draw_str_fg<T: Bitmap>(buf: &mut T, x: i64, y: i64, color: u32, s: &str) {
-    for (i, c) in s.chars().enumerate() {
-        draw_font_fg(buf, x + i as i64 * 8, y, color, c);
-    }
-}
-
-struct VramTextWriter<'a> {
-    vram: &'a mut VramBufferInfo,
-    cursor_x: i64,
-    cursor_y: i64
-}
-impl<'a> VramTextWriter<'a> {
-    fn new(vram: &'a mut VramBufferInfo) -> Self {
-        Self {
-            vram,
-            cursor_x: 0,
-            cursor_y: 0,
-        }
-    }
-}
-impl fmt::Write for VramTextWriter<'_> {
-    fn write_str(&mut self, s: &str) -> fmt::Result {
-        for c in s.chars() {
-            if c == '\n' {
-                self.cursor_y += 16;
-                self.cursor_x = 0;
-                continue;
-            }
-            draw_font_fg(self.vram, self.cursor_x, self.cursor_y, 0xffffff, c);
-            self.cursor_x += 8;
-        }
-        Ok(())
+        hlt()
     }
 }
 
@@ -335,7 +270,7 @@ fn draw_test_pattern<T: Bitmap>(buf: &mut T) {
 #[panic_handler]
 fn panic(_info: &PanicInfo) -> ! {
     loop {
-        hlt() // 空のloopだとCPUサイクルを消費してしまうので、HLT命令で割り込みが来るまで休ませる
+        hlt()
     }
 }
 
@@ -346,18 +281,19 @@ trait Bitmap {
     fn height(&self) -> i64;
     fn buf_mut(&mut self) -> *mut u8;
     /// # Safety
-    /// 
-    /// Returned pointer is valid as long as the given coordinates are valid which means that passing is_in_*_range tests. 
-    /// 返されるポインタは、与えられた座標が有効である限り有効であり、is_in_*_rangeテストをパスすることを意味する。
+    ///
+    /// Returned pointer is valid as long as the given coordinates are valid
+    /// which means that passing is_in_*_range tests.
     unsafe fn unchecked_pixel_at_mut(&mut self, x: i64, y: i64) -> *mut u32 {
         self.buf_mut().add(
-            ((y * self.pixels_per_line() + x) * self.bytes_per_pixel()) as usize,
+            ((y * self.pixels_per_line() + x) * self.bytes_per_pixel())
+                as usize,
         ) as *mut u32
     }
     fn pixel_at_mut(&mut self, x: i64, y: i64) -> Option<&mut u32> {
         if self.is_in_x_range(x) && self.is_in_y_range(y) {
-            // SAFETY: (x,y) is always validated by the checks above. 上記によりx,yは常に安全
-            unsafe {Some(&mut *(self.unchecked_pixel_at_mut(x, y)))}
+            // SAFETY: (x, y) is always validated by the checks above.
+            unsafe { Some(&mut *(self.unchecked_pixel_at_mut(x, y))) }
         } else {
             None
         }
@@ -398,18 +334,18 @@ impl Bitmap for VramBufferInfo {
 
 fn init_vram(efi_system_table: &EfiSystemTable) -> Result<VramBufferInfo> {
     let gp = locate_graphic_protocol(efi_system_table)?;
-    Ok(VramBufferInfo { 
-        buf: gp.mode.frame_buffer_base as *mut u8, 
-        width: gp.mode.info.horizontal_resolution as i64, 
-        height: gp.mode.info.vertical_resolution as i64, 
+    Ok(VramBufferInfo {
+        buf: gp.mode.frame_buffer_base as *mut u8,
+        width: gp.mode.info.horizontal_resolution as i64,
+        height: gp.mode.info.vertical_resolution as i64,
         pixels_per_line: gp.mode.info.pixels_per_scan_line as i64,
     })
 }
 
 /// # Safety
-/// 
-/// (x,y) must be a valid point in the buf.
-unsafe fn unchecked_draw_point<T: Bitmap> (
+///
+/// (x, y) must be a valid point in the buf.
+unsafe fn unchecked_draw_point<T: Bitmap>(
     buf: &mut T,
     color: u32,
     x: i64,
@@ -453,7 +389,6 @@ fn fill_rect<T: Bitmap>(
     Ok(())
 }
 
-// 直線となる整数座標の点を求める
 fn calc_slope_point(da: i64, db: i64, ia: i64) -> Option<i64> {
     if da < db {
         None
@@ -486,21 +421,100 @@ fn draw_line<T: Bitmap>(
     let dy = (y1 - y0).abs();
     let sy = (y1 - y0).signum();
     if dx >= dy {
-        for (rx, ry) in (0..dx).flat_map(|rx| calc_slope_point(dx, dy, rx).map(|ry| (rx, ry))) {
+        for (rx, ry) in (0..dx)
+            .flat_map(|rx| calc_slope_point(dx, dy, rx).map(|ry| (rx, ry)))
+        {
             draw_point(buf, color, x0 + rx * sx, y0 + ry * sy)?;
         }
     } else {
-        for (rx, ry) in (0..dy).flat_map(|ry| calc_slope_point(dy, dx, ry).map(|rx| (rx, ry))) {
+        for (rx, ry) in (0..dy)
+            .flat_map(|ry| calc_slope_point(dy, dx, ry).map(|rx| (rx, ry)))
+        {
             draw_point(buf, color, x0 + rx * sx, y0 + ry * sy)?;
         }
     }
     Ok(())
 }
 
+fn lookup_font(c: char) -> Option<[[char; 8]; 16]> {
+    const FONT_SOURCE: &str = include_str!("./font.txt");
+    if let Ok(c) = u8::try_from(c) {
+        let mut fi = FONT_SOURCE.split('\n');
+        while let Some(line) = fi.next() {
+            if let Some(line) = line.strip_prefix("0x") {
+                if let Ok(idx) = u8::from_str_radix(line, 16) {
+                    if idx != c {
+                        continue;
+                    }
+                    let mut font = [['*'; 8]; 16];
+                    for (y, line) in fi.clone().take(16).enumerate() {
+                        for (x, c) in line.chars().enumerate() {
+                            if let Some(e) = font[y].get_mut(x) {
+                                *e = c;
+                            }
+                        }
+                    }
+                    return Some(font);
+                }
+            }
+        }
+    }
+    None
+}
+
+fn draw_font_fg<T: Bitmap>(buf: &mut T, x: i64, y: i64, color: u32, c: char) {
+    if let Some(font) = lookup_font(c) {
+        for (dy, row) in font.iter().enumerate() {
+            for (dx, pixel) in row.iter().enumerate() {
+                let color = match pixel {
+                    '*' => color,
+                    _ => continue,
+                };
+                let _ = draw_point(buf, color, x + dx as i64, y + dy as i64);
+            }
+        }
+    }
+}
+
+fn draw_str_fg<T: Bitmap>(buf: &mut T, x: i64, y: i64, color: u32, s: &str) {
+    for (i, c) in s.chars().enumerate() {
+        draw_font_fg(buf, x + i as i64 * 8, y, color, c)
+    }
+}
+
+struct VramTextWriter<'a> {
+    vram: &'a mut VramBufferInfo,
+    cursor_x: i64,
+    cursor_y: i64,
+}
+impl<'a> VramTextWriter<'a> {
+    fn new(vram: &'a mut VramBufferInfo) -> Self {
+        Self {
+            vram,
+            cursor_x: 0,
+            cursor_y: 0,
+        }
+    }
+}
+impl fmt::Write for VramTextWriter<'_> {
+    fn write_str(&mut self, s: &str) -> fmt::Result {
+        for c in s.chars() {
+            if c == '\n' {
+                self.cursor_y += 16;
+                self.cursor_x = 0;
+                continue;
+            }
+            draw_font_fg(self.vram, self.cursor_x, self.cursor_y, 0xffffff, c);
+            self.cursor_x += 8;
+        }
+        Ok(())
+    }
+}
+
 // exit_boot_services()を呼び出すためのラッパー関数
 fn exit_from_efi_boot_services(
     image_handle: EfiHandle,
-    efi_system_table: &EfiSystemTable,
+    efi_system_table &EfiSystemTable,
     memory_map: &mut MemoryMapHolder,
 ) {
     loop {
