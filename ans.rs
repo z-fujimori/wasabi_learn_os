@@ -125,6 +125,11 @@ struct EfiBootServicesTable {
         descriptor_version: *mut u32,
     ) -> EfiStatus,
     _reserved1: [u64; 32],
+    // _reserved1: [u64; 21],
+    // exit_boot_services:
+    //     extern "win64" fn(image_handle: EfiHandle, map_key: usize) -> EfiStatus,
+    
+    // _reserved4: [u64; 10],
     locate_protocol: extern "win64" fn(
         protocol: *const EfiGuid,
         registration: *const EfiVoid,
@@ -231,6 +236,12 @@ fn efi_main(_image_handle: EfiHandle, efi_system_table: &EfiSystemTable) {
     )
     .unwrap();
     //println!("Hello, world!");
+    exit_from_efi_boot_services(
+        image_handle,
+        efi_system_table,
+        &mut memory_map,
+    );
+    writeln!(w, "Hello, Non-UEFI world!").unwrap();
     loop {
         hlt()
     }
@@ -497,5 +508,24 @@ impl fmt::Write for VramTextWriter<'_> {
             self.cursor_x += 8;
         }
         Ok(())
+    }
+}
+
+// exit_boot_services()を呼び出すためのラッパー関数
+fn exit_from_efi_boot_services(
+    image_handle: EfiHandle,
+    efi_system_table &EfiSystemTable,
+    memory_map: &mut MemoryMapHolder,
+) {
+    loop {
+        let status = efi_system_table.boot_services.get_memory_map(memory_map);
+        assert_eq!(status, EfiStatus::Success);
+        let status = (efi_system_table.boot_services.exit_boot_services) (
+            image_handle,
+            memory_map.map_key,
+        );
+        if status == EfiStatus::Success {
+            break;
+        }
     }
 }
