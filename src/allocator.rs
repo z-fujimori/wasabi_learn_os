@@ -14,13 +14,23 @@ use core::fmt;
 use core::mem::size_of;
 use core::ops::DerefMut;
 use core::ptr::null_mut;
-       
+
 pub fn round_up_to_nearest_pow2(v: usize) -> Result<usize> {
     1usize.checked_shl(usize::BITS - v.wrapping_sub(1).leading_zeros()).ok_or("Out of range")
 }
 #[test_case]
 fn round_up_to_nearest_pow2_test() {
-    unimplemented!("cargo test should fail, ritght ?");
+    assert_eq!(round_up_to_nearest_pow2(0), Err("Out of range"));
+    assert_eq!(round_up_to_nearest_pow2(1), Ok(1));
+    assert_eq!(round_up_to_nearest_pow2(2), Ok(2));
+    assert_eq!(round_up_to_nearest_pow2(3), Ok(4));
+    assert_eq!(round_up_to_nearest_pow2(4), Ok(4));
+    assert_eq!(round_up_to_nearest_pow2(5), Ok(8));
+    assert_eq!(round_up_to_nearest_pow2(6), Ok(8));
+    assert_eq!(round_up_to_nearest_pow2(7), Ok(8));
+    assert_eq!(round_up_to_nearest_pow2(8), Ok(8));
+    assert_eq!(round_up_to_nearest_pow2(9), Ok(16));
+    assert_eq!(round_up_to_nearest_pow2(10), Ok(16));
 }
 
 
@@ -205,5 +215,146 @@ impl FirstFitAllocator {
         // It's okay not to be sorted the headers at this point
         // since all the regions written in memory maps are not contiguous
         // so that they can't be merged anyway
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    use alloc::vec;
+
+    // allocとfreeの繰り返しが動作するか
+    #[test_case]
+    fn malloc_iterate_free_and_alloc() {
+        use alloc::vec::Vec;
+        for i in 0..100 {
+            let mut vec = Vec::new();
+            vec.resize(i, 10);
+        }
+    }
+
+    // アラインメントを大きくしながらalloc
+    #[test_case]
+    fn malloc_align() {
+        let mut pointers = [null_mut::<u8>(); 100];
+        for align in [1, 2, 4, 8, 16, 32, 4096] {
+            for e in pointers.iter_mut() {
+                *e = ALLOCATOR.alloc_with_options(
+                    Layout::from_size_align(1234, align).expect("Failed to create Layout"),
+                );
+                assert!(*e as usize != 0);
+                assert!((*e as usize) % align == 0);
+            }
+        }
+    }
+
+    // 大小さまざまなアラインメントでalloc
+    #[test_case]
+    fn malloc_align_random_order() {
+        for align in [32, 4096, 8, 4, 16, 2, 1] {
+            let mut pointers = [null_mut::<u8>(); 100];
+            for e in pointers.iter_mut() {
+                *e = ALLOCATOR.alloc_with_options(
+                    Layout::from_size_align(1234, align).expect("Faled to create Layout"),
+                );
+                assert!(*e as usize != 0);
+                assert!((*e as usize) % align == 0);
+            }
+        }
+    }
+
+    // 確保した領域が重複しない
+    #[test_case]
+    fn allocated_object_have_no_overlap() {
+        let allocations = [
+            Layout::from_size_align(128, 128).unwrap(),
+            Layout::from_size_align(32, 32).unwrap(),
+            Layout::from_size_align(8, 8).unwrap(),
+            Layout::from_size_align(16, 16).unwrap(),
+            Layout::from_size_align(6000, 64).unwrap(),
+            Layout::from_size_align(4, 4).unwrap(),
+            Layout::from_size_align(2, 2).unwrap(),
+            Layout::from_size_align(6000, 64).unwrap(),
+            Layout::from_size_align(64, 64).unwrap(),
+            Layout::from_size_align(1, 1).unwrap(),
+            Layout::from_size_align(6000, 64).unwrap(),
+            Layout::from_size_align(6000, 64).unwrap(),
+            Layout::from_size_align(6000, 64).unwrap(),
+            Layout::from_size_align(6000, 64).unwrap(),
+            Layout::from_size_align(6000, 64).unwrap(),
+            Layout::from_size_align(6000, 64).unwrap(),
+            Layout::from_size_align(3, 64).unwrap(),
+            Layout::from_size_align(3, 64).unwrap(),
+            Layout::from_size_align(3, 64).unwrap(),
+            Layout::from_size_align(3, 64).unwrap(),
+            Layout::from_size_align(3, 64).unwrap(),
+            Layout::from_size_align(3, 64).unwrap(),
+            Layout::from_size_align(3, 64).unwrap(),
+            Layout::from_size_align(3, 64).unwrap(),
+            Layout::from_size_align(3, 64).unwrap(),
+            Layout::from_size_align(3, 64).unwrap(),
+            Layout::from_size_align(6000, 64).unwrap(),
+            Layout::from_size_align(6000, 64).unwrap(),
+            Layout::from_size_align(600000, 64).unwrap(),
+            Layout::from_size_align(6000, 64).unwrap(),
+            Layout::from_size_align(60000, 64).unwrap(),
+            Layout::from_size_align(60000, 64).unwrap(),
+            Layout::from_size_align(60000, 64).unwrap(),
+            Layout::from_size_align(60000, 64).unwrap(),
+        ];
+        let mut pointers = vec![null_mut::<u8>(); allocations.len()];
+        for e in allocations.iter().zip(pointers.iter_mut()).enumerate() {
+            let (i, (layout, pointer)) = e;
+            *pointer = ALLOCATOR.alloc_with_options(*layout);
+            for k in 0..layout.size() {
+                unsafe {*pointer.add(k) = i as u8}
+            }
+        }
+        for e in allocations.iter().zip(pointers.iter_mut()).enumerate() {
+            let (i, (layout, pointer)) = e;
+            for k in 0..layout.size() {
+                assert!(unsafe {*pointer.add(k)} == i as u8);
+            }
+        }
+        for e in allocations
+            .iter()
+            .zip(pointers.iter_mut())
+            .enumerate()
+            .skip(1)
+            .step_by(2) 
+        {
+            let (i, (layout, pointer)) = e;
+            unsafe { ALLOCATOR.dealloc(*pointer, *layout); }
+        }
+        for e in allocations
+            .iter()
+            .zip(pointers.iter_mut())
+            .enumerate()
+            .skip(1)
+            .step_by(2)
+        {
+            let (i ,(layout, pointer)) = e;
+            for k in 0..layout.size() {
+                assert!(unsafe {*pointer.add(k)} == i as u8);
+            }
+        }
+        for e in allocations
+            .iter()
+            .zip(pointers.iter_mut())
+            .enumerate()
+            .step_by(2)
+        {
+            let (i, (layout, pointer)) = e;
+            *pointer = ALLOCATOR.alloc_with_options(*layout);
+            for k in 0..layout.size() {
+                unsafe {*pointer.add(k) = i as u8} 
+            }
+        }
+        for e in allocations.iter().zip(pointers.iter()).enumerate() {
+            let (i, (layout, pointer)) = e;
+            for k in 0..layout.size() {
+                assert!(unsafe {*pointer.add(k)} == i as u8)
+            }
+        }
     }
 }
