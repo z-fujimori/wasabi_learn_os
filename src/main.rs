@@ -23,6 +23,8 @@ use wasabi::uefi::EfiMemoryType;
 use wasabi::uefi::EfiSystemTable;
 use wasabi::uefi::VramTextWriter;
 use wasabi::x86::hlt;
+use wasabi::x86::init_exceptions;
+use wasabi::x86::trigger_debug_interrupt;
 
 #[no_mangle]
 fn efi_main(image_handle: EfiHandle, efi_system_table: &EfiSystemTable) {
@@ -51,6 +53,20 @@ fn efi_main(image_handle: EfiHandle, efi_system_table: &EfiSystemTable) {
     let total_memory_size_mib = total_memory_pages * 4096 / 1024 / 1024;
     writeln!(w, "Total: {total_memory_pages} pages = {total_memory_size_mib} MiB").unwrap();
     writeln!(w, "Hello, Non-UEFI world!").unwrap();
+    let cr3 = wasabi::x86::read_cr3();
+    println!("cr3 = {cr3:#p}");
+    let t = Some(unsafe { &*cr3 });
+    println!("{t:?}");
+    let t = t.and_then(|t| t.next_level(0));
+    println!("{t:?}");
+    let t = t.and_then(|t| t.next_level(0));
+    println!("{t:?}");
+    let t = t.and_then(|t| t.next_level(0));
+    println!("{t:?}");
+
+    let (_gdt, _idt) = init_exceptions();
+    info!("Exception initialized!");
+    trigger_debug_interrupt();
     loop {
         hlt() // 空のloopだとCPUサイクルを消費してしまうので、HLT命令で割り込みが来るまで休ませる
     }

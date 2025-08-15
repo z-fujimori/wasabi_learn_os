@@ -39,30 +39,35 @@ fn hexdump_bytes(bytes: &[u8]) {
     let mut offset = 0;
     for v in bytes.iter() {
         if i == 0 {
-            println!("{offset:08X}: ");
+            print!("{offset:08X}: ");
         }
-        println!("{:02X} ", v);
+        print!("{:02X} ", v);
         ascii[i] = *v;
         i += 1;
         if i == 16 {
             print!("|");
-            for  c in ascii.iter() {
+            for c in ascii.iter() {
                 print!(
                     "{}",
                     match c {
-                        0x20..=0x7e => { *c as char } _=> { '.' }
+                        0x20..=0x7e => { 
+                            *c as char 
+                        } 
+                        _ => { 
+                            '.' 
+                        }
                     }
                 );
             }
+            println!("|");
+            offset += 16;
+            i = 0;
         }
-        println!("|");
-        offset += 16;
-        i = 0;
     }
     if i != 0 {
         let old_i = i;
         while i < 16 {
-            print!(" ");
+            print!("   ");
             i += 1;
         }
         print!("|");
