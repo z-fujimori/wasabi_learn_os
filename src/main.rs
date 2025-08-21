@@ -73,6 +73,7 @@ fn efi_main(image_handle: EfiHandle, efi_system_table: &EfiSystemTable) {
     let (_gdt, _idt) = init_exceptions();
     info!("Exception initialized!");
     trigger_debug_interrupt();
+    info!("Execution continued");
     loop {
         hlt() // 空のloopだとCPUサイクルを消費してしまうので、HLT命令で割り込みが来るまで休ませる
     }
