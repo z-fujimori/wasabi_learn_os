@@ -6,6 +6,7 @@
 use core::fmt::Write;
 use core::panic::PanicInfo;
 use core::writeln;
+use wasabi::executor;
 use wasabi::graphics::draw_test_pattern;
 use wasabi::graphics::fill_rect;
 use wasabi::graphics::Bitmap;
@@ -16,6 +17,8 @@ use wasabi::println;
 use wasabi::error;
 use wasabi::info;
 use wasabi::warn;
+use wasabi::executor::Executor;
+use wasabi::executor::Task;
 use wasabi::qemu::exit_qemu;
 use wasabi::qemu::QemuExitCode;
 use wasabi::uefi::init_vram;
@@ -81,13 +84,7 @@ fn efi_main(image_handle: EfiHandle, efi_system_table: &EfiSystemTable) {
     init_paging(&memory_map);
     info!("Now we are using our own page tables!");
 
-    info!("Reading from memory address 0...");
-
-    #[allow(clippy::zero_ptr)]
-    #[allow(deref_nullptr)]
-    let value_at_zero = unsafe { *(0 as *const u8) };
-    info!("value_at_zero = {value_at_zero}");
-
+    // Unmap page 0 to detect null ptr dereference
     let page_table = read_cr3();
     unsafe {
         (*page_table)
@@ -96,15 +93,13 @@ fn efi_main(image_handle: EfiHandle, efi_system_table: &EfiSystemTable) {
     }
     flush_tlb();
 
-    info!("Reading from memorty address 0... (again)");
-    #[allow(clippy::zero_ptr)]
-    #[allow(deref_nullptr)]
-    let value_at_zero = unsafe { *(0 as *const u8) };
-    info!("value_at_zero = {value_at_zero}");
-
-    loop {
-        hlt() // 空のloopだとCPUサイクルを消費してしまうので、HLT命令で割り込みが来るまで休ませる
-    }
+    let task = Task::new(async {
+        info!("Hello from the async world!");
+        Ok(())
+    });
+    let mut executor = Executor::new();
+    executor.enqueue(task);
+    Executor::run(executor);
 }
 
 #[panic_handler]

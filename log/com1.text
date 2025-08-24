@@ -4,11 +4,11 @@ BdsDxe: starting Boot0002 "UEFI QEMU HARDDISK QM00001 " from PciRoot(0x0)/Pci(0x
 Booting WasabiOS...
 image_handle: 0000000000BEC4E498
 efi_system_table: 0x00000000bf9ee018
-image_base: 0x00000000BE32D000
-image_size: 0x0000000000072000
-[INFO] src/main.rs:44 : info
-[WARN] src/main.rs:45 : warn
-[ERROR] src/main.rs:46 : error
+image_base: 0x00000000BE31F000
+image_size: 0x0000000000079000
+[INFO] src/main.rs:47 : info
+[WARN] src/main.rs:48 : warn
+[ERROR] src/main.rs:49 : error
 00000000: 49 42 49 20 53 59 53 54 46 00 02 00 78 00 00 00 |IBI SYSTF...x...|
 00000010: F8 EB 8B D5 00 00 00 00 18 D8 92 BF 00 00 00 00 |................|
 00000020: 00 00 01 00 00 00 00 00 18 CE D8 BE 00 00 00 00 |................|
@@ -608,50 +608,28 @@ None
 [INFO] src/x86.rs:827: Loading GDT @ 0x000000013FF7FE20
 [INFO] src/x86.rs:834: Loading TSS ( selector = 0x18 )
 [INFO] src/x86.rs:699: Loading IDT: IdtrParameters { limit: 4096, base: 0x13ff7ee00 }
-[INFO] src/main.rs:78 : Exception initialized!
+[INFO] src/main.rs:81 : Exception initialized!
 [ERROR] src/x86.rs:522: Interrupt Info: 
         {
-            rip: 0x00000000BE33F9F5, CS: 0x0008,
-            rsp: 0x00000000BFEAFE00, SS: 0x0010,
-            rbp: 0x00000000BFEAFE00,
+            rip: 0x00000000BE332105, CS: 0x0008,
+            rsp: 0x00000000BFEB04B0, SS: 0x0010,
+            rbp: 0x00000000BFEB04B0,
 
-            rflags:     0x0000000000000006,
+            rflags:     0x0000000000000002,
             error_code: 0x0000000000000000,
 
-            rax: 0x0000000000000000, rcx: 0x00000000BFEAFA00,
-            rdx: 0x00000000BE36CF88, rbx: 0x00000000BE4FD5C8,
+            rax: 0x0000000000000000, rcx: 0x00000000BFEB0100,
+            rdx: 0x00000000BE364248, rbx: 0x00000000BE4FB5C8,
             rsi: 0x00000000BE64A018, rdi: 0x00000000BE64A018,
             r8:  0x0000000000000001, r9:  0x0000000000000004,
-            r10: 0x00000000BE372F00, r11: 0x0000000000000001,
+            r10: 0x00000000BE36B210, r11: 0x0000000000000001,
             r12: 0x0000000000000000, r13: 0x0000000000000000,
-            r14: 0x00000000BE4FD518, r15: 0x0000000000000005,
+            r14: 0x00000000BE4FB518, r15: 0x0000000000000005,
         }
 [ERROR] src/x86.rs:523: Exception 0x03: 
 [ERROR] src/x86.rs:526: Breakpoint
-[INFO] src/main.rs:80 : Execution continued
-[INFO] src/main.rs:82 : Now we are using our own page tables!
-[INFO] src/main.rs:84 : Reading from memory address 0...
-[INFO] src/main.rs:89 : value_at_zero = 0
-[INFO] src/main.rs:99 : Reading from memorty address 0... (again)
-[ERROR] src/x86.rs:522: Interrupt Info: 
-        {
-            rip: 0x00000000BE335FE2, CS: 0x0008,
-            rsp: 0x00000000BFEAFE10, SS: 0x0010,
-            rbp: 0x00000000BFEAFE90,
-
-            rflags:     0x0000000000010006,
-            error_code: 0x0000000000000000,
-
-            rax: 0x00000000BE349FF0, rcx: 0x00000000BE34A0F0,
-            rdx: 0x00000000BE36CF88, rbx: 0x00000000BE4FD5C8,
-            rsi: 0x00000000BE64A018, rdi: 0x00000000BE64A018,
-            r8:  0x00000000BE361CA0, r9:  0x0000000000000001,
-            r10: 0x00000000BE361C80, r11: 0x00000000BE361C80,
-            r12: 0x0000000000000000, r13: 0x0000000000000000,
-            r14: 0x00000000BE4FD518, r15: 0x0000000000000005,
-        }
-[ERROR] src/x86.rs:523: Exception 0x0E: 
-[ERROR] src/x86.rs:544: Page Fault
-[ERROR] src/x86.rs:545: CR2=0x0000000000000000
-[ERROR] src/x86.rs:546: Caused by: A supervisor mode data read on a non-present page, page structures are valid
-[ERROR] src/main.rs:112: PANIC: PanicInfo { payload: Any { .. }, message: Some(fatal exception), location: Location { file: "src/x86.rs", line: 576, col: 5 }, can_unwind: true, force_no_backtrace: false }
+[INFO] src/main.rs:83 : Execution continued
+[INFO] src/main.rs:85 : Now we are using our own page tables!
+[INFO] src/executor.rs:90 : Executor starts running...
+[INFO] src/main.rs:97 : Hello from the async world!
+[INFO] src/executor.rs:98 : Task completed: Task(src/main.rs:96): Ok(())
