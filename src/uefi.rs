@@ -1,3 +1,4 @@
+use crate::acpi::AcpiRsdpStruct;
 use crate::graphics::draw_font_fg;
 use crate::graphics::Bitmap;
 use crate::result::Result;
@@ -23,6 +24,20 @@ const EFI_GRAPHICS_OUTPUT_PROTOCOL_GUID: EfiGuid = EfiGuid {
     data1: 0x23dc,
     data2: 0x4a38,
     data3: [0x96, 0xfb, 0x7a, 0xde, 0xd0, 0x80, 0x51, 0x6a],
+};
+
+const EFI_LOADED_IMAGE_PROTOCOL_GUID: EfiGuid = EfiGuid {
+    data0: 0x5B1B31A1,
+    data1: 0x9562,
+    data2: 0x11d2,
+    data3: [0x8E, 0x3F, 0x00, 0xA0, 0xC9, 0x69, 0x72, 0x3B],
+};
+
+const EFI_ACPI_TABLE_GUID: EfiGuid = EfiGuid {
+    data0: 0x8868e871,
+    data1: 0xe4f1,
+    data2: 0x11d3,
+    data3: [0xbc, 0x22, 0x00, 0x80, 0xc7, 0x3c, 0x88, 0x81],
 };
 
 #[derive(Debug, PartialEq, Eq, Copy, Clone)]
@@ -124,14 +139,20 @@ impl<'a> Iterator for MemoryMapIterator<'a> {
 #[repr(C)]
 pub struct EfiBootServicesTable {
     _reserved0: [u64; 7],
-    get_memory_map: extern "win64" fn (
+    get_memory_map: extern "win64" fn(
         memory_map_size: *mut usize,
         memory_map: *mut u8,
         map_key: *mut usize,
         descriptor_size: *mut usize,
         descriptor_version: *mut u32,
     ) -> EfiStatus,
-    _reserved1: [u64; 21],
+    _reserved2: [u64; 11],
+    handle_protocol: extern "win64" fn(
+        handle: EfiHandle,
+        protocol: *const EfiGuid,
+        interface: *mut *mut EfiVoid,
+    ) -> EfiStatus,
+    _reserved1: [u64; 9],
     exit_boot_services: extern "win64" fn (_image_handle: EfiHandle, map_key: usize) -> EfiStatus,
 
     _reserved4: [u64; 10],
@@ -159,14 +180,40 @@ const _: () = assert!(offset_of!(EfiBootServicesTable, locate_protocol) == 320);
 // EFI System Tableの中のEFI Boot Services Tableの中に書かれている
 
 #[repr(C)]
+#[derive(Copy, Clone)]
+pub struct EfiConfigurationTable {
+    vendor_guid: EfiGuid,
+    pub vendor_table: *const u8,
+}
+
+#[repr(C)]
 pub struct EfiSystemTable {
     _reserved0: [u64; 12],
-    pub boot_services: &'static EfiBootServicesTable,
+    boot_services: &'static EfiBootServicesTable,
+    number_of_table_entries: usize,
+    configuration_table: *const EfiConfigurationTable,
 }
 const _: () = assert!(offset_of!(EfiSystemTable, boot_services) == 96);
 impl EfiSystemTable {
     pub fn boot_services(&self) -> &EfiBootServicesTable {
         self.boot_services
+    }
+    fn lookup_config_table(
+        &self,
+        guid: &EfiGuid,
+    ) -> Option<EfiConfigurationTable> {
+        for i in 0..self.number_of_table_entries {
+            let ct = unsafe { &*self.configuration_table.add(i) };
+            if ct.vendor_guid == *guid {
+                return Some(*ct);
+            }
+        }
+        None
+    }
+    pub fn acpi_table(&self) -> Option<&'static AcpiRsdpStruct> {
+        self.lookup_config_table(&EFI_ACPI_TABLE_GUID).map(|t| unsafe {
+            &*(t.vendor_table as *const AcpiRsdpStruct)
+        })
     }
 }
 
@@ -206,6 +253,28 @@ fn locate_graphic_protocol<'a>(
         &EFI_GRAPHICS_OUTPUT_PROTOCOL_GUID,
         null_mut::<EfiVoid>(),
         &mut graphic_output_protocol as *mut *mut EfiGraphicsOutPutProtocol as *mut *mut EfiVoid,
+    );
+    if status != EfiStatus::Success {
+        return Err("Failed to locate graphics output protocol");
+    }
+    Ok(unsafe { &*graphic_output_protocol })
+}
+
+pub struct EfiLoadedImageProtocol {
+    _reserved: [u64; 8],
+    pub image_base: u64,
+    pub image_size: u64,
+}
+
+pub fn locate_loaded_image_protocol(
+    image_handle: EfiHandle,
+    efi_system_table: &EfiSystemTable,
+) -> Result<&EfiLoadedImageProtocol> {
+    let mut graphic_output_protocol = null_mut::<EfiLoadedImageProtocol>();
+    let status = (efi_system_table.boot_services.handle_protocol)(
+        image_handle,
+        &EFI_LOADED_IMAGE_PROTOCOL_GUID,
+        &mut graphic_output_protocol as *mut *mut EfiLoadedImageProtocol as *mut *mut EfiLoadedImageProtocol as *mut *mut EfiVoid,
     );
     if status != EfiStatus::Success {
         return Err("Failed to locate graphics output protocol");
