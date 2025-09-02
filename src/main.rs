@@ -11,13 +11,12 @@ use wasabi::error;
 use wasabi::executor::Executor;
 use wasabi::executor::Task;
 use wasabi::executor::TimeoutFuture;
-use wasabi::graphics::draw_test_pattern;
-use wasabi::graphics::fill_rect;
-use wasabi::graphics::Bitmap;
+use wasabi::graphics::BitmapTextWriter;
 use wasabi::hpet::global_timestamp;
 use wasabi::info;
 use wasabi::init::init_allocator;
 use wasabi::init::init_basic_runtime;
+use wasabi::init::init_display;
 use wasabi::init::init_hpet;
 use wasabi::init::init_paging;
 use wasabi::print::hexdump;
@@ -29,7 +28,6 @@ use wasabi::uefi::init_vram;
 use wasabi::uefi::locate_loaded_image_protocol;
 use wasabi::uefi::EfiHandle;
 use wasabi::uefi::EfiSystemTable;
-use wasabi::uefi::VramTextWriter;
 use wasabi::x86::init_exceptions;
 
 #[no_mangle]
@@ -47,11 +45,8 @@ fn efi_main(image_handle: EfiHandle, efi_system_table: &EfiSystemTable) {
     error!("error");
     hexdump(efi_system_table);
     let mut vram = init_vram(efi_system_table).expect("init_vram failed");
-    let vw = vram.width();
-    let vh = vram.height();
-    fill_rect(&mut vram, 0x000000, 0, 0, vw, vh).expect("fill_rect failed");
-    draw_test_pattern(&mut vram);
-    let mut w = VramTextWriter::new(&mut vram);
+    init_display(&mut vram);
+    let mut w = BitmapTextWriter::new(&mut vram);
     let acpi = efi_system_table.acpi_table().expect("ACPI table not found");
 
     let memory_map = init_basic_runtime(image_handle, efi_system_table);
