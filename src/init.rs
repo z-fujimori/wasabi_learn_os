@@ -1,5 +1,6 @@
 extern crate alloc;
 
+use crate::acpi;
 use crate::acpi::AcpiRsdpStruct;
 use crate::allocator::ALLOCATOR;
 use crate::graphics::draw_test_pattern;
@@ -86,4 +87,14 @@ pub fn init_display(vram: &mut VramBufferInfo) {
     let vh = vram.height();
     fill_rect(vram, 0x000000, 0, 0, vw, vh).expect("fill_rect failed");
     draw_test_pattern(vram);
+}
+
+pub fn init_pci(acpi: &AcpiRsdpStruct) {
+    if let Some(mcfg) = acpi.mcfg() {
+        for i in 0..mcfg.num_of_entries() {
+            if let Some(e) = mcfg.entry(i) {
+                info!("{}", e)
+            }
+        }
+    }
 }
