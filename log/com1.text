@@ -2,7 +2,7 @@
 BdsDxe: loading Boot0002 "UEFI QEMU HARDDISK QM00001 " from PciRoot(0x0)/Pci(0x1F,0x2)/Sata(0x0,0xFFFF,0x0)
 BdsDxe: starting Boot0002 "UEFI QEMU HARDDISK QM00001 " from PciRoot(0x0)/Pci(0x1F,0x2)/Sata(0x0,0xFFFF,0x0)
 Booting WasabiOS...
-image_handle: 00000000007E3EE518
+image_handle: 00000000007E3EE718
 efi_system_table: 0x000000007f9ee018
 image_base: 0x0000000140000000
 image_size: 0x000000000007F000
@@ -42,6 +42,6 @@ image_size: 0x000000000007F000
 [INFO] src/pci.rs:166: (vendor: 0x8086, device: 0x2922)
 [INFO] src/pci.rs:166: (vendor: 0x8086, device: 0x2930)
 [INFO] src/executor.rs:94 : Executor starts running...
-[INFO] src/main.rs:63 : 100 hpet.main_counter = 3.363ms
-[INFO] src/main.rs:70 : 200 hpet.main_counter = 6.152ms
+[INFO] src/main.rs:63 : 100 hpet.main_counter = 3.277ms
+[INFO] src/main.rs:70 : 200 hpet.main_counter = 5.965ms
 [INFO] src/main.rs:81 : Started to monitor serial port
