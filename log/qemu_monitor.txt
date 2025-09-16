@@ -1,9 +1,5 @@
 QEMU 10.0.2 monitor - type 'help' for more information
-(qemu) a[K
-unknown command: 'a'
-(qemu) t[K[Dte[K[D[Dtel[K[D[D[Dteln[K[D[D[D[Dtelne[K[D[D[D[D[Dtelnet[K[D[D[D[D[D[Dtelnet [K[D[D[D[D[D[D[Dtelnet l[K[D[D[D[D[D[D[D[Dtelnet lo[K[D[D[D[D[D[D[D[D[Dtelnet loc[K[D[D[D[D[D[D[D[D[D[Dtelnet loca[K[D[D[D[D[D[D[D[D[D[D[Dtelnet local[K[D[D[D[D[D[D[D[D[D[D[D[Dtelnet localh[K[D[D[D[D[D[D[D[D[D[D[D[D[Dtelnet localho[K[D[D[D[D[D[D[D[D[D[D[D[D[D[Dtelnet localhos[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Dtelnet localhost[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Dtelnet localhost [K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Dtelnet localhost 2[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Dtelnet localhost 23[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Dtelnet localhost 234[K[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[Dtelnet localhost 2345[K
-unknown command: 'telnet'
-(qemu) i[K[Din[K[D[Dinf[K[D[D[Dinfo[K[D[D[D[Dinfo [K[D[D[D[D[Dinfo p[K[D[D[D[D[D[Dinfo pc[K[D[D[D[D[D[D[Dinfo pci[K
+(qemu) i[K[Din[K[D[Dinf[K[D[D[Dinfo[K[D[D[D[Dinfor[K[D[D[D[D[Dinfo[K[D[D[D[Dinfo [K[D[D[D[D[Dinfo p[K[D[D[D[D[D[Dinfo pc[K[D[D[D[D[D[D[Dinfo pci[K
   Bus  0, device   0, function 0:
     Host bridge: PCI device 8086:29c0
       PCI subsystem 1af4:1100
@@ -24,6 +20,12 @@ unknown command: 'telnet'
       BAR2: I/O at 0x6060 [0x607f]
       BAR3: 32 bit memory at 0xc1080000 [0xc1083fff]
       BAR6: 32 bit memory (not mapped)
+      id ""
+  Bus  0, device   3, function 0:
+    USB controller: PCI device 1b36:000d
+      PCI subsystem 1af4:1100
+      IRQ 11, pin A
+      BAR0: 64 bit memory at 0x800000000 [0x800003fff]
       id ""
   Bus  0, device  31, function 0:
     ISA bridge: PCI device 8086:2918
