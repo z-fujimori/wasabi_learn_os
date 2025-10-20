@@ -5,7 +5,7 @@ Booting WasabiOS...
 image_handle: 00000000007EBC5B18
 efi_system_table: 0x000000007f9ee018
 image_base: 0x0000000140000000
-image_size: 0x000000000007F000
+image_size: 0x0000000000080000
 [INFO] src/main.rs:43 : info
 [WARN] src/main.rs:44 : warn
 [ERROR] src/main.rs:45 : error
@@ -27,8 +27,8 @@ image_size: 0x000000000007F000
 [INFO] src/init.rs:80 : EfiMemoryDescriptor { memory_type: CONVENTIONAL_MEMORY, physical_start: 2119258112, virtual_start: 0, number_of_pages: 3, attribute: 15 }
 [INFO] src/init.rs:80 : EfiMemoryDescriptor { memory_type: CONVENTIONAL_MEMORY, physical_start: 2145386496, virtual_start: 0, number_of_pages: 154, attribute: 15 }
 [INFO] src/init.rs:80 : EfiMemoryDescriptor { memory_type: CONVENTIONAL_MEMORY, physical_start: 4294967296, virtual_start: 0, number_of_pages: 262144, attribute: 15 }
-[INFO] src/init.rs:80 : EfiMemoryDescriptor { memory_type: CONVENTIONAL_MEMORY, physical_start: 5369229312, virtual_start: 0, number_of_pages: 262017, attribute: 15 }
-[INFO] src/init.rs:83 : Total : 1037704 pages = 4053 MiB
+[INFO] src/init.rs:80 : EfiMemoryDescriptor { memory_type: CONVENTIONAL_MEMORY, physical_start: 5369233408, virtual_start: 0, number_of_pages: 262016, attribute: 15 }
+[INFO] src/init.rs:83 : Total : 1037703 pages = 4053 MiB
 [INFO] src/x86.rs:752: TSS64 created @ 0x17FF7FE80
 [INFO] src/x86.rs:827: Loading GDT @ 0x000000017FF7FE20
 [INFO] src/x86.rs:834: Loading TSS ( selector = 0x18 )
@@ -42,7 +42,16 @@ image_size: 0x000000000007F000
 [INFO] src/pci.rs:166: (vendor: 0x8086, device: 0x2918)
 [INFO] src/pci.rs:166: (vendor: 0x8086, device: 0x2922)
 [INFO] src/pci.rs:166: (vendor: 0x8086, device: 0x2930)
-[INFO] src/executor.rs:94 : Executor starts running...
-[INFO] src/main.rs:63 : 100 hpet.main_counter = 3.282ms
-[INFO] src/main.rs:70 : 200 hpet.main_counter = 6.109ms
+[INFO] src/executor.rs:170: Starting global executor loop
+[INFO] src/executor.rs:95 : Executor starts running...
+[INFO] src/main.rs:63 : 100 hpet.main_counter = 7.052ms
+[INFO] src/main.rs:70 : 200 hpet.main_counter = 10.171ms
 [INFO] src/main.rs:81 : Started to monitor serial port
+[INFO] src/main.rs:63 : 101 hpet.main_counter = 2.009924s
+[INFO] src/main.rs:70 : 201 hpet.main_counter = 2.01182s
+[INFO] src/main.rs:63 : 102 hpet.main_counter = 4.011777s
+[INFO] src/main.rs:70 : 202 hpet.main_counter = 4.013449s
+[INFO] src/main.rs:63 : 103 hpet.main_counter = 6.013479s
+[INFO] src/main.rs:70 : 203 hpet.main_counter = 6.015209s
+[INFO] src/executor.rs:103: Task completed: Task(src/main.rs:90): Ok(())
+[INFO] src/executor.rs:103: Task completed: Task(src/main.rs:91): Ok(())
