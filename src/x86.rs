@@ -11,6 +11,7 @@ use core::marker::PhantomData;
 use core::mem::offset_of;
 use core::mem::size_of;
 use core::mem::size_of_val;
+use core::mem::ManuallyDrop;
 use core::mem::MaybeUninit;
 use core::pin::Pin;
 
@@ -72,11 +73,11 @@ pub enum TranslationResult {
 }
 
 #[repr(transparent)]
-pub struct Entry<const LEVEL: usize, const SHIFT: usize, NEXT> {
+pub struct Entry<const LEVEL: usize, NEXT> {
     value: u64,
     next_type: PhantomData<NEXT>,
 }
-impl<const LEVEL: usize, const SHIFT: usize, NEXT> Entry<LEVEL, SHIFT, NEXT> {
+impl<const LEVEL: usize, NEXT> Entry<LEVEL, NEXT> {
     fn read_value(&self) -> u64 {
         self.value
     }
@@ -141,28 +142,22 @@ impl<const LEVEL: usize, const SHIFT: usize, NEXT> Entry<LEVEL, SHIFT, NEXT> {
         }
     }
 }
-impl<const LEVEL: usize, const SHIFT: usize, NEXT> fmt::Display
-    for Entry<LEVEL, SHIFT, NEXT>
-{
+impl<const LEVEL: usize, NEXT> fmt::Display for Entry<LEVEL, NEXT> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         self.format(f)
     }
 }
-impl<const LEVEL: usize, const SHIFT: usize, NEXT> fmt::Debug
-    for Entry<LEVEL, SHIFT, NEXT>
-{
+impl<const LEVEL: usize, NEXT> fmt::Debug for Entry<LEVEL, NEXT> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         self.format(f)
     }
 }
 
 #[repr(align(4096))]
-pub struct Table<const LEVEL: usize, const SHIFT: usize, NEXT> {
-    entry: [Entry<LEVEL, SHIFT, NEXT>; 512],
+pub struct Table<const LEVEL: usize, NEXT> {
+    entry: [Entry<LEVEL, NEXT>; 512],
 }
-impl<const LEVEL: usize, const SHIFT: usize, NEXT: core::fmt::Debug>
-    Table<LEVEL, SHIFT, NEXT>
-{
+impl<const LEVEL: usize, NEXT: core::fmt::Debug> Table<LEVEL, NEXT> {
     fn format(&self, f: &mut fmt::Formatter) -> fmt::Result {
         writeln!(f, "L{}Table @ {:#p} {{", LEVEL, self)?;
         for i in 0..512 {
@@ -174,25 +169,26 @@ impl<const LEVEL: usize, const SHIFT: usize, NEXT: core::fmt::Debug>
         }
         writeln!(f, "}}")
     }
+    const fn index_shift() -> usize {
+        (LEVEL - 1) * 9 + 12
+    }
     pub fn next_level(&self, index: usize) -> Option<&NEXT> {
         self.entry.get(index).and_then(|e| e.table().ok())
     }
     fn calc_index(&self, addr: u64) -> usize {
-        ((addr >> SHIFT) & 0b1_1111_1111) as usize
+        ((addr >> Self::index_shift()) & 0b1_1111_1111) as usize
     }
 }
-impl<const LEVEL: usize, const SHIFT: usize, NEXT: fmt::Debug> fmt::Debug
-    for Table<LEVEL, SHIFT, NEXT>
-{
+impl<const LEVEL: usize, NEXT: fmt::Debug> fmt::Debug for Table<LEVEL, NEXT> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         self.format(f)
     }
 }
 
-pub type PT = Table<1, 12, [u8; PAGE_SIZE]>;
-pub type PD = Table<2, 21, PT>;
-pub type PDPT = Table<3, 30, PD>;
-pub type PML4 = Table<4, 39, PDPT>;
+pub type PT = Table<1, [u8; PAGE_SIZE]>;
+pub type PD = Table<2, PT>;
+pub type PDPT = Table<3, PD>;
+pub type PML4 = Table<4, PDPT>;
 
 impl PML4 {
     pub fn new() -> Box<Self> {
@@ -209,25 +205,38 @@ impl PML4 {
         phys: u64,
         attr: PageAttr,
     ) -> Result<()> {
-        if virt_start & ATTR_MASK != 0 {
-            return Err("Invalid virt_start");
-        }
-        if virt_end & ATTR_MASK != 0 {
-            return Err("Invalid virt_end");
-        }
-        if phys & ATTR_MASK != 0 {
-            return Err("Invalid phys");
-        }
-        for addr in (virt_start..virt_end).step_by(PAGE_SIZE) {
-            let index = self.calc_index(addr);
-            let table = self.entry[index].ensure_populated()?.table_mut()?;
+        let table = self;
+        let mut addr = virt_start;
+        loop {
             let index = table.calc_index(addr);
             let table = table.entry[index].ensure_populated()?.table_mut()?;
-            let index = table.calc_index(addr);
-            let table = table.entry[index].ensure_populated()?.table_mut()?;
-            let index = table.calc_index(addr);
-            let pte = &mut table.entry[index];
-            pte.set_page(phys + addr - virt_start, attr)?;
+            loop{
+                let index = table.calc_index(addr);
+                let table = table.entry[index].ensure_populated()?.table_mut()?;
+                loop {
+                    let index = table.calc_index(addr);
+                    let table = table.entry[index].ensure_populated()?.table_mut()?;
+                    loop {
+                        let index = table.calc_index(addr);
+                        let pte = &mut table.entry[index];
+                        let phys_addr = phys + addr - virt_start;
+                        pte.set_page(phys_addr, attr)?;
+                        addr = addr.wrapping_add(PAGE_SIZE as u64);
+                        if index + 1 >= (1 << 9) || addr >= virt_end {
+                            break;
+                        }
+                    }
+                    if index + 1 >= (1 << 9) || addr >= virt_end {
+                        break;
+                    }
+                }
+                if index + 1 >= (1 << 9) || addr >= virt_end {
+                    break;
+                }
+            }
+            if index + 1 >= (1 << 9) || addr >= virt_end {
+                break;
+            }
         }
         Ok(())
     }
@@ -913,4 +922,30 @@ pub fn flush_tlb() {
     unsafe {
         write_cr3(read_cr3());
     }
+}
+
+/// # Safety
+/// This will create a mutable reference to the page table structure
+/// ページテーブル構造への可変参照が生成される (安全性は保証されない↓)
+/// So is is programmer's responsibility to ensure that at most one instance of the reference exist at every moment.
+/// 参照のインスタンスが常に最大1つだけ存在することを保証するのは呼び出し側の責任
+pub unsafe fn take_current_page_table() -> ManuallyDrop<Box<PML4>> {
+    ManuallyDrop::new(Box::from_raw(read_cr3()))
+}
+/// # Safety
+/// This function sets the CR3 value so that anything bad can happen.
+pub unsafe fn put_current_page_table(mut table: ManuallyDrop<Box<PML4>>) {
+    // Set CR3 to reflect the updates and drop TLB caches. (CR3を更新内容を反映するように設定し、TLBキャッシュをクリア)
+    write_cr3(Box::into_raw(ManuallyDrop::take(&mut table)))
+}
+/// # Safety
+/// This function modifies the page table as callback does, so
+/// anything bad can happen if there are some mistakes.
+pub unsafe fn with_current_page_table<F>(callback: F)
+where
+    F: FnOnce(&mut PML4),
+{
+    let mut table = take_current_page_table();
+    callback(&mut table);
+    put_current_page_table(table)
 }
