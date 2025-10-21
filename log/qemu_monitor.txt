@@ -1,0 +1,47 @@
+QEMU 10.0.2 monitor - type 'help' for more information
+(qemu) i[K[Din[K[D[Dinf[K[D[D[Dinfo[K[D[D[D[Dinfo [K[D[D[D[D[Dinfo p[K[D[D[D[D[D[Dinfo pc[K[D[D[D[D[D[D[Dinfo pci[K
+  Bus  0, device   0, function 0:
+    Host bridge: PCI device 8086:29c0
+      PCI subsystem 1af4:1100
+      id ""
+  Bus  0, device   1, function 0:
+    VGA controller: PCI device 1234:1111
+      PCI subsystem 1af4:1100
+      BAR0: 32 bit prefetchable memory at 0xc0000000 [0xc0ffffff]
+      BAR2: 32 bit memory at 0xc1085000 [0xc1085fff]
+      BAR6: 32 bit memory (not mapped)
+      id ""
+  Bus  0, device   2, function 0:
+    Ethernet controller: PCI device 8086:10d3
+      PCI subsystem 8086:0000
+      IRQ 11, pin A
+      BAR0: 32 bit memory at 0xc1060000 [0xc107ffff]
+      BAR1: 32 bit memory at 0xc1040000 [0xc105ffff]
+      BAR2: I/O at 0x6060 [0x607f]
+      BAR3: 32 bit memory at 0xc1080000 [0xc1083fff]
+      BAR6: 32 bit memory (not mapped)
+      id ""
+  Bus  0, device   3, function 0:
+    USB controller: PCI device 1b36:000d
+      PCI subsystem 1af4:1100
+      IRQ 11, pin A
+      BAR0: 64 bit memory at 0x800000000 [0x800003fff]
+      id ""
+  Bus  0, device  31, function 0:
+    ISA bridge: PCI device 8086:2918
+      PCI subsystem 1af4:1100
+      id ""
+  Bus  0, device  31, function 2:
+    SATA controller: PCI device 8086:2922
+      PCI subsystem 1af4:1100
+      IRQ 10, pin A
+      BAR4: I/O at 0x6040 [0x605f]
+      BAR5: 32 bit memory at 0xc1084000 [0xc1084fff]
+      id ""
+  Bus  0, device  31, function 3:
+    SMBus: PCI device 8086:2930
+      PCI subsystem 1af4:1100
+      IRQ 10, pin A
+      BAR4: I/O at 0x6000 [0x603f]
+      id ""
+(qemu) 

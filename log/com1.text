@@ -5,7 +5,7 @@ Booting WasabiOS...
 image_handle: 00000000007EBC5B18
 efi_system_table: 0x000000007f9ee018
 image_base: 0x0000000140000000
-image_size: 0x0000000000080000
+image_size: 0x0000000000082000
 [INFO] src/main.rs:43 : info
 [WARN] src/main.rs:44 : warn
 [ERROR] src/main.rs:45 : error
@@ -27,32 +27,34 @@ image_size: 0x0000000000080000
 [INFO] src/init.rs:80 : EfiMemoryDescriptor { memory_type: CONVENTIONAL_MEMORY, physical_start: 2119258112, virtual_start: 0, number_of_pages: 3, attribute: 15 }
 [INFO] src/init.rs:80 : EfiMemoryDescriptor { memory_type: CONVENTIONAL_MEMORY, physical_start: 2145386496, virtual_start: 0, number_of_pages: 154, attribute: 15 }
 [INFO] src/init.rs:80 : EfiMemoryDescriptor { memory_type: CONVENTIONAL_MEMORY, physical_start: 4294967296, virtual_start: 0, number_of_pages: 262144, attribute: 15 }
-[INFO] src/init.rs:80 : EfiMemoryDescriptor { memory_type: CONVENTIONAL_MEMORY, physical_start: 5369233408, virtual_start: 0, number_of_pages: 262016, attribute: 15 }
-[INFO] src/init.rs:83 : Total : 1037703 pages = 4053 MiB
-[INFO] src/x86.rs:760: TSS64 created @ 0x17FF7FE80
-[INFO] src/x86.rs:835: Loading GDT @ 0x000000017FF7FE20
-[INFO] src/x86.rs:842: Loading TSS ( selector = 0x18 )
-[INFO] src/x86.rs:707: Loading IDT: IdtrParameters { limit: 4096, base: 0x17ff7ee00 }
+[INFO] src/init.rs:80 : EfiMemoryDescriptor { memory_type: CONVENTIONAL_MEMORY, physical_start: 5369241600, virtual_start: 0, number_of_pages: 262014, attribute: 15 }
+[INFO] src/init.rs:83 : Total : 1037701 pages = 4053 MiB
+[INFO] src/x86.rs:761: TSS64 created @ 0x17FF7FE80
+[INFO] src/x86.rs:836: Loading GDT @ 0x000000017FF7FE20
+[INFO] src/x86.rs:843: Loading TSS ( selector = 0x18 )
+[INFO] src/x86.rs:708: Loading IDT: IdtrParameters { limit: 4096, base: 0x17ff7ee00 }
 [INFO] src/init.rs:68 : HPET is at 0x00000000fed00000
 [INFO] src/init.rs:97 : ECAM: Bus [0..=255] is mapped at 0xB0000000
-[INFO] src/pci.rs:167: (vendor: 0x8086, device: 0x29C0)
-[INFO] src/pci.rs:167: (vendor: 0x1234, device: 0x1111)
-[INFO] src/pci.rs:167: (vendor: 0x8086, device: 0x10D3)
-[INFO] src/pci.rs:167: (vendor: 0x1B36, device: 0x000D)
-[INFO] src/xhci.rs:25 : Xhci found at: /pci/bus/0x00/device/0x03/function/0x0)
-[INFO] src/pci.rs:167: (vendor: 0x8086, device: 0x2918)
-[INFO] src/pci.rs:167: (vendor: 0x8086, device: 0x2922)
-[INFO] src/pci.rs:167: (vendor: 0x8086, device: 0x2930)
+[INFO] src/pci.rs:185: (vendor: 0x8086, device: 0x29C0)
+[INFO] src/pci.rs:185: (vendor: 0x1234, device: 0x1111)
+[INFO] src/pci.rs:185: (vendor: 0x8086, device: 0x10D3)
+[INFO] src/pci.rs:185: (vendor: 0x1B36, device: 0x000D)
+[INFO] src/xhci.rs:29 : Xhci found at: /pci/bus/0x00/device/0x03/function/0x0)
+[INFO] src/xhci.rs:33 : xhci: BarMem64[0x0000000800000000..0x0000000800004000]
+[ERROR] src/pci.rs:188: PCI: driver attach() failed: "wip"
+[INFO] src/pci.rs:185: (vendor: 0x8086, device: 0x2918)
+[INFO] src/pci.rs:185: (vendor: 0x8086, device: 0x2922)
+[INFO] src/pci.rs:185: (vendor: 0x8086, device: 0x2930)
 [INFO] src/executor.rs:170: Starting global executor loop
 [INFO] src/executor.rs:95 : Executor starts running...
-[INFO] src/main.rs:63 : 100 hpet.main_counter = 6.046ms
-[INFO] src/main.rs:70 : 200 hpet.main_counter = 9.035ms
+[INFO] src/main.rs:63 : 100 hpet.main_counter = 5.819ms
+[INFO] src/main.rs:70 : 200 hpet.main_counter = 8.72ms
 [INFO] src/main.rs:81 : Started to monitor serial port
-[INFO] src/main.rs:63 : 101 hpet.main_counter = 2.008796s
-[INFO] src/main.rs:70 : 201 hpet.main_counter = 2.010621s
-[INFO] src/main.rs:63 : 102 hpet.main_counter = 4.01047s
-[INFO] src/main.rs:70 : 202 hpet.main_counter = 4.012116s
-[INFO] src/main.rs:63 : 103 hpet.main_counter = 6.012173s
-[INFO] src/main.rs:70 : 203 hpet.main_counter = 6.014001s
+[INFO] src/main.rs:63 : 101 hpet.main_counter = 2.008507s
+[INFO] src/main.rs:70 : 201 hpet.main_counter = 2.01017s
+[INFO] src/main.rs:63 : 102 hpet.main_counter = 4.010158s
+[INFO] src/main.rs:70 : 202 hpet.main_counter = 4.01191s
+[INFO] src/main.rs:63 : 103 hpet.main_counter = 6.01195s
+[INFO] src/main.rs:70 : 203 hpet.main_counter = 6.014186s
 [INFO] src/executor.rs:103: Task completed: Task(src/main.rs:90): Ok(())
 [INFO] src/executor.rs:103: Task completed: Task(src/main.rs:91): Ok(())
