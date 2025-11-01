@@ -51,16 +51,16 @@ image_size: 0x0000000000092000
 [INFO] src/executor.rs:95 : Executor starts running...
 [INFO] src/xhci.rs:81 : xhci: cap_regs.MaxSlots = 64
 [INFO] src/xhci.rs:85 : xhci: op_regs.USBSTS = 0
-[INFO] src/xhci.rs:86 : xhci: rt_regs.MFINDEX = 685
+[INFO] src/xhci.rs:86 : xhci: rt_regs.MFINDEX = 684
 [INFO] src/executor.rs:103: Task completed: Task(src/xhci.rs:77): Err("wip")
-[INFO] src/main.rs:63 : 100 hpet.main_counter = 13.888ms
-[INFO] src/main.rs:70 : 200 hpet.main_counter = 16.806ms
+[INFO] src/main.rs:63 : 100 hpet.main_counter = 13.779ms
+[INFO] src/main.rs:70 : 200 hpet.main_counter = 16.904ms
 [INFO] src/main.rs:81 : Started to monitor serial port
-[INFO] src/main.rs:63 : 101 hpet.main_counter = 2.016555s
-[INFO] src/main.rs:70 : 201 hpet.main_counter = 2.018651s
-[INFO] src/main.rs:63 : 102 hpet.main_counter = 4.018347s
-[INFO] src/main.rs:70 : 202 hpet.main_counter = 4.020236s
-[INFO] src/main.rs:63 : 103 hpet.main_counter = 6.020052s
-[INFO] src/main.rs:70 : 203 hpet.main_counter = 6.02184s
+[INFO] src/main.rs:63 : 101 hpet.main_counter = 2.016638s
+[INFO] src/main.rs:70 : 201 hpet.main_counter = 2.018826s
+[INFO] src/main.rs:63 : 102 hpet.main_counter = 4.018497s
+[INFO] src/main.rs:70 : 202 hpet.main_counter = 4.020452s
+[INFO] src/main.rs:63 : 103 hpet.main_counter = 6.020264s
+[INFO] src/main.rs:70 : 203 hpet.main_counter = 6.02237s
 [INFO] src/executor.rs:103: Task completed: Task(src/main.rs:90): Ok(())
 [INFO] src/executor.rs:103: Task completed: Task(src/main.rs:91): Ok(())
