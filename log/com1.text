@@ -5,7 +5,7 @@ Booting WasabiOS...
 image_handle: 00000000007E3C5918
 efi_system_table: 0x000000007f9ee018
 image_base: 0x0000000140000000
-image_size: 0x00000000000A1000
+image_size: 0x00000000000A3000
 [INFO] src/main.rs:43 : info
 [WARN] src/main.rs:44 : warn
 [ERROR] src/main.rs:45 : error
@@ -27,8 +27,8 @@ image_size: 0x00000000000A1000
 [INFO] src/init.rs:79 : EfiMemoryDescriptor { memory_type: CONVENTIONAL_MEMORY, physical_start: 2119262208, virtual_start: 0, number_of_pages: 1, attribute: 15 }
 [INFO] src/init.rs:79 : EfiMemoryDescriptor { memory_type: CONVENTIONAL_MEMORY, physical_start: 2145386496, virtual_start: 0, number_of_pages: 154, attribute: 15 }
 [INFO] src/init.rs:79 : EfiMemoryDescriptor { memory_type: CONVENTIONAL_MEMORY, physical_start: 4294967296, virtual_start: 0, number_of_pages: 262144, attribute: 15 }
-[INFO] src/init.rs:79 : EfiMemoryDescriptor { memory_type: CONVENTIONAL_MEMORY, physical_start: 5369368576, virtual_start: 0, number_of_pages: 261983, attribute: 15 }
-[INFO] src/init.rs:82 : Total : 1037665 pages = 4053 MiB
+[INFO] src/init.rs:79 : EfiMemoryDescriptor { memory_type: CONVENTIONAL_MEMORY, physical_start: 5369376768, virtual_start: 0, number_of_pages: 261981, attribute: 15 }
+[INFO] src/init.rs:82 : Total : 1037663 pages = 4053 MiB
 [INFO] src/x86.rs:762: TSS64 created @ 0x17FF7FE80
 [INFO] src/x86.rs:837: Loading GDT @ 0x000000017FF7FE20
 [INFO] src/x86.rs:844: Loading TSS ( selector = 0x18 )
@@ -40,10 +40,10 @@ image_size: 0x00000000000A1000
 [INFO] src/pci.rs:185: (vendor: 0x8086, device: 0x10D3)
 [INFO] src/pci.rs:185: (vendor: 0x1B36, device: 0x000D)
 [INFO] src/xhci.rs:83 : Xhci found at: /pci/bus/0x00/device/0x03/function/0x0)
-[INFO] src/xhci.rs:291: xhci: page_size = 4096
-[INFO] src/xhci.rs:293: xhci: original num_scratchpad_bufs = 0
-[INFO] src/xhci.rs:399: Starting xHC...
-[INFO] src/xhci.rs:401: xHC started running
+[INFO] src/xhci.rs:309: xhci: page_size = 4096
+[INFO] src/xhci.rs:311: xhci: original num_scratchpad_bufs = 0
+[INFO] src/xhci.rs:417: Starting xHC...
+[INFO] src/xhci.rs:419: xHC started running
 [INFO] src/pci.rs:185: (vendor: 0x8086, device: 0x2918)
 [INFO] src/pci.rs:185: (vendor: 0x8086, device: 0x2922)
 [INFO] src/pci.rs:185: (vendor: 0x8086, device: 0x2930)
@@ -51,25 +51,31 @@ image_size: 0x00000000000A1000
 [INFO] src/executor.rs:95 : Executor starts running...
 [INFO] src/xhci.rs:94 : xhci: cap_regs.MaxSlots = 64
 [INFO] src/xhci.rs:98 : xhci: op_regs.USBSTS = 0
-[INFO] src/xhci.rs:102: xhci: rt_regs.MFINDEX = 548
+[INFO] src/xhci.rs:102: xhci: rt_regs.MFINDEX = 607
 [INFO] src/xhci.rs:106: PORTSC: values for port 1..9
-[INFO] src/xhci.rs:109:     1: 0x000202A0
-[INFO] src/xhci.rs:109:     2: 0x000202A0
-[INFO] src/xhci.rs:109:     3: 0x000202A0
-[INFO] src/xhci.rs:109:     4: 0x000202A0
-[INFO] src/xhci.rs:109:     5: 0x00020EE1
-[INFO] src/xhci.rs:109:     6: 0x000202A0
-[INFO] src/xhci.rs:109:     7: 0x000202A0
-[INFO] src/xhci.rs:109:     8: 0x000202A0
+[INFO] src/xhci.rs:110:     1: 0x000202A0
+[INFO] src/xhci.rs:110:     2: 0x000202A0
+[INFO] src/xhci.rs:110:     3: 0x000202A0
+[INFO] src/xhci.rs:110:     4: 0x000202A0
+[INFO] src/xhci.rs:110:     5: 0x00020EE1
+[INFO] src/xhci.rs:110:     6: 0x000202A0
+[INFO] src/xhci.rs:110:     7: 0x000202A0
+[INFO] src/xhci.rs:110:     8: 0x000202A0
+[INFO] src/xhci.rs:118: Sending No-Op command to test event ring...
+[INFO] src/xhci.rs:673: No-Op command sent at index 0
+[INFO] src/xhci.rs:132: xhci: port 5 is connected
+[INFO] src/xhci.rs:134: xhci: resetting port 5
+[INFO] src/xhci.rs:136: xhci: port 5 has been reset
 [INFO] src/executor.rs:103: Task completed: Task(src/xhci.rs:90): Ok(())
-[INFO] src/main.rs:63 : 100 hpet.main_counter = 22.943ms
-[INFO] src/main.rs:70 : 200 hpet.main_counter = 26.058ms
+[INFO] src/main.rs:63 : 100 hpet.main_counter = 29.487ms
+[INFO] src/main.rs:70 : 200 hpet.main_counter = 32.302ms
 [INFO] src/main.rs:81 : Started to monitor serial port
-[INFO] src/main.rs:63 : 101 hpet.main_counter = 2.025842s
-[INFO] src/main.rs:70 : 201 hpet.main_counter = 2.027787s
-[INFO] src/main.rs:63 : 102 hpet.main_counter = 4.027668s
-[INFO] src/main.rs:70 : 202 hpet.main_counter = 4.029383s
-[INFO] src/main.rs:63 : 103 hpet.main_counter = 6.029397s
-[INFO] src/main.rs:70 : 203 hpet.main_counter = 6.03102s
+[INFO] src/xhci.rs:498: unhandled event: GenericTrbEntry { data: Volatile { value: 83886080 }, option: Volatile { value: 16777216 }, control: Volatile { value: 34817 } }
+[INFO] src/main.rs:63 : 101 hpet.main_counter = 2.032067s
+[INFO] src/main.rs:70 : 201 hpet.main_counter = 2.033872s
+[INFO] src/main.rs:63 : 102 hpet.main_counter = 4.033624s
+[INFO] src/main.rs:70 : 202 hpet.main_counter = 4.035234s
+[INFO] src/main.rs:63 : 103 hpet.main_counter = 6.03523s
+[INFO] src/main.rs:70 : 203 hpet.main_counter = 6.036711s
 [INFO] src/executor.rs:103: Task completed: Task(src/main.rs:90): Ok(())
 [INFO] src/executor.rs:103: Task completed: Task(src/main.rs:91): Ok(())

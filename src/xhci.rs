@@ -104,11 +104,20 @@ impl PciXhciDriver {
             xhc.regs.rt_regs.as_ref().mfindex()
         );
         info!("PORTSC: values for port {:?}", xhc.regs.portsc.port_range());
+        let mut connected_port = None;
         for port in xhc.regs.portsc.port_range() {
             if let Some(e) = xhc.regs.portsc.get(port) {
-                info!("  {port:3}: {:#010X}", e.value())
+                info!("  {port:3}: {:#010X}", e.value());
+                if e.ccs() {
+                    connected_port = Some(port)
+                }
             }
         }
+
+        // No-Op コマンドでテスト
+        info!("Sending No-Op command to test event ring...");
+        xhc.command_ring.lock().send_noop_command()?;
+
         let xhc = Rc::new(xhc);
         {
             let xhc = xhc.clone();
@@ -118,6 +127,14 @@ impl PciXhciDriver {
                     yield_execution().await;
                 }
             })
+        }
+        if let Some(port) = connected_port {
+            info!("xhci: port {port} is connected");
+            if let Some(portsc) = xhc.regs.portsc.get(port) {
+                info!("xhci: resetting port {port}");
+                portsc.reset_port().await;
+                info!("xhci: port {port} has been reset")
+            }
         }
         Ok(())
     }
@@ -272,6 +289,7 @@ impl RuntimeRegisters {
         let irs = self.irs.get_mut(index).ok_or("Index out of range")?;
         irs.erst_size = 1;
         irs.erdp = ring.ring_phys_addr();
+        irs.erst_base = ring.erst_phys_addr();
         irs.management = 0;
         ring.set_erdp(&mut irs.erdp as *mut u64);
         Ok(())
@@ -644,6 +662,17 @@ impl CommandRing {
     fn ring_phys_addr(&self) -> u64 {
         self.ring.as_ref() as *const TrbRing as u64
     }
+    fn send_noop_command(&mut self) -> Result<()> {
+        let mut noop_trb = GenericTrbEntry::default();
+        noop_trb.set_trb_type(TrbType::NoOpCommand);
+        noop_trb.set_toggle_cycle(true);
+        
+        let index = self.ring.as_ref().current_index();
+        unsafe { self.ring.get_unchecked_mut() }.write(index, noop_trb)?;
+        
+        info!("No-Op command sent at index {}", index);
+        Ok(())
+    }
 }
 impl Default for CommandRing {
     fn default() -> Self {
@@ -741,5 +770,44 @@ impl PortScEntry {
     fn value(&self) -> u32 {
         let portsc = self.ptr.lock();
         unsafe { read_volatile(*portsc) }
+    }
+    fn bit(&self, pos: usize) -> bool {
+        (self.value() & (1 << pos)) != 0
+    }
+    fn ccs(&self) -> bool {
+        // ccs - current connect status - ros
+        self.bit(0)
+    }
+    fn assert_bit(&self, pos: usize) {
+        const PRESERVE_MASK: u32 = 0b01001111000000011111111111101001;
+        let portsc = self.ptr.lock();
+        let old = unsafe { read_volatile(*portsc) };
+        unsafe { write_volatile(*portsc, (old & PRESERVE_MASK) | (1 << pos)) }
+    }
+    fn pp(&self) -> bool {
+        // PP - Port Power - RWS
+        self.bit(9)
+    }
+    fn assert_pp(&self) {
+        // PP - Port Power - RWS
+        self.assert_bit(9)
+    }
+    pub fn pr(&self) -> bool {
+        // PR - Port Reset - RW1S
+        self.bit(4)
+    }
+    pub fn assert_pr(&self) {
+        // PR - Port Reset - RW1S
+        self.assert_bit(4)
+    }
+    pub async fn reset_port(&self) {
+        self.assert_pp();
+        while !self.pp() {
+            yield_execution().await
+        }
+        self.assert_pr();
+        while self.pr() {
+            yield_execution().await
+        }
     }
 }

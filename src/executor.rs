@@ -168,6 +168,6 @@ pub fn spawn_global(future: impl Future<Output = Result<()>> + 'static) {
 }
 pub fn start_global_executor() -> ! {
     info!("Starting global executor loop");
-    Executor::run(&GLOBAL_EXECUTOR)
+    Executor::run(&GLOBAL_EXECUTOR);
 }
 
