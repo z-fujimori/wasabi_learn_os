@@ -40,10 +40,10 @@ image_size: 0x00000000000A3000
 [INFO] src/pci.rs:185: (vendor: 0x8086, device: 0x10D3)
 [INFO] src/pci.rs:185: (vendor: 0x1B36, device: 0x000D)
 [INFO] src/xhci.rs:83 : Xhci found at: /pci/bus/0x00/device/0x03/function/0x0)
-[INFO] src/xhci.rs:312: xhci: page_size = 4096
-[INFO] src/xhci.rs:314: xhci: original num_scratchpad_bufs = 0
-[INFO] src/xhci.rs:420: Starting xHC...
-[INFO] src/xhci.rs:422: xHC started running
+[INFO] src/xhci.rs:314: xhci: page_size = 4096
+[INFO] src/xhci.rs:316: xhci: original num_scratchpad_bufs = 0
+[INFO] src/xhci.rs:422: Starting xHC...
+[INFO] src/xhci.rs:424: xHC started running
 [INFO] src/pci.rs:185: (vendor: 0x8086, device: 0x2918)
 [INFO] src/pci.rs:185: (vendor: 0x8086, device: 0x2922)
 [INFO] src/pci.rs:185: (vendor: 0x8086, device: 0x2930)
@@ -51,7 +51,7 @@ image_size: 0x00000000000A3000
 [INFO] src/executor.rs:95 : Executor starts running...
 [INFO] src/xhci.rs:94 : xhci: cap_regs.MaxSlots = 64
 [INFO] src/xhci.rs:98 : xhci: op_regs.USBSTS = 0
-[INFO] src/xhci.rs:102: xhci: rt_regs.MFINDEX = 615
+[INFO] src/xhci.rs:102: xhci: rt_regs.MFINDEX = 554
 [INFO] src/xhci.rs:106: PORTSC: values for port 1..9
 [INFO] src/xhci.rs:110:     1: 0x000202A0
 [INFO] src/xhci.rs:110:     2: 0x000202A0
@@ -62,19 +62,21 @@ image_size: 0x00000000000A3000
 [INFO] src/xhci.rs:110:     7: 0x000202A0
 [INFO] src/xhci.rs:110:     8: 0x000202A0
 [INFO] src/xhci.rs:118: Sending No-Op command to test event ring...
-[INFO] src/xhci.rs:677: No-Op command sent at index 0
+[INFO] src/xhci.rs:679: No-Op command sent at index 0
 [INFO] src/xhci.rs:132: xhci: port 5 is connected
-[INFO] src/xhci.rs:134: xhci: resetting port 5
-[INFO] src/xhci.rs:136: xhci: port 5 has been reset
-[INFO] src/xhci.rs:138: xhci: port 5 is enabled
+[INFO] src/xhci.rs:139: xhci: resetting port 5
+[INFO] src/xhci.rs:141: xhci: port 5 has been reset
+[INFO] src/xhci.rs:143: xhci: port 5 is enabled
 [INFO] src/executor.rs:103: Task completed: Task(src/xhci.rs:90): Ok(())
-[INFO] src/main.rs:63 : 100 hpet.main_counter = 36.513ms
-[INFO] src/main.rs:70 : 200 hpet.main_counter = 39.932ms
+[INFO] src/main.rs:63 : 100 hpet.main_counter = 30.582ms
+[INFO] src/main.rs:70 : 200 hpet.main_counter = 33.482ms
 [INFO] src/main.rs:81 : Started to monitor serial port
-[INFO] src/xhci.rs:502: unhandled event: GenericTrbEntry { data: Volatile { value: 83886080 }, option: Volatile { value: 16777216 }, control: Volatile { value: 34817 } }
-[INFO] src/main.rs:63 : 101 hpet.main_counter = 2.039032s
-[INFO] src/main.rs:70 : 201 hpet.main_counter = 2.041683s
-[INFO] src/main.rs:63 : 102 hpet.main_counter = 4.040623s
-[INFO] src/main.rs:70 : 202 hpet.main_counter = 4.043075s
-[INFO] src/main.rs:63 : 103 hpet.main_counter = 6.042234s
-[INFO] src/main.rs:70 : 203 hpet.main_counter = 6.044434s
+[INFO] src/xhci.rs:504: unhandled event: GenericTrbEntry { data: Volatile { value: 83886080 }, option: Volatile { value: 16777216 }, control: Volatile { value: 34817 } }
+[INFO] src/main.rs:63 : 101 hpet.main_counter = 2.033301s
+[INFO] src/main.rs:70 : 201 hpet.main_counter = 2.034872s
+[INFO] src/main.rs:63 : 102 hpet.main_counter = 4.034869s
+[INFO] src/main.rs:70 : 202 hpet.main_counter = 4.036388s
+[INFO] src/main.rs:63 : 103 hpet.main_counter = 6.036436s
+[INFO] src/main.rs:70 : 203 hpet.main_counter = 6.037945s
+[INFO] src/executor.rs:103: Task completed: Task(src/main.rs:90): Ok(())
+[INFO] src/executor.rs:103: Task completed: Task(src/main.rs:91): Ok(())
