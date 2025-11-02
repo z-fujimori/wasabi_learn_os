@@ -133,7 +133,10 @@ impl PciXhciDriver {
             if let Some(portsc) = xhc.regs.portsc.get(port) {
                 info!("xhci: resetting port {port}");
                 portsc.reset_port().await;
-                info!("xhci: port {port} has been reset")
+                info!("xhci: port {port} has been reset");
+                if portsc.is_enabled() {
+                    info!("xhci: port {port} is enabled");
+                }
             }
         }
         Ok(())
@@ -461,6 +464,7 @@ impl EventRing {
     fn set_erdp(&mut self, erdp: *mut u64) {
         self.erdp = Some(erdp);
     }
+    // Event Ring Segment Table（ERST）の物理アドレスを取得
     fn erst_phys_addr(&self) -> u64 {
         self.erst.as_ref() as *const EventRingSegmentTableEntry as u64
     }
@@ -809,5 +813,13 @@ impl PortScEntry {
         while self.pr() {
             yield_execution().await
         }
+    }
+    pub fn ped(&self) -> bool {
+        // PED - Port Enabled/Disabled - RWS
+        self.bit(1)
+    }
+    pub fn is_enabled(&self) -> bool {
+        // USB2,USB3のEnable状態に対応するPORTSCビットは(1, 1, 1, 0) = (PP, CCS, PED, PR)
+        self.pp() && self.ccs() && self.ped() && !self.pr()
     }
 }
