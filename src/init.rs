@@ -1,6 +1,5 @@
 extern crate alloc;
 
-use crate::acpi;
 use crate::acpi::AcpiRsdpStruct;
 use crate::allocator::ALLOCATOR;
 use crate::graphics::draw_test_pattern;
