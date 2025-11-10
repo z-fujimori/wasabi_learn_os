@@ -2,7 +2,7 @@
 BdsDxe: loading Boot0002 "UEFI QEMU HARDDISK QM00001 " from PciRoot(0x0)/Pci(0x1F,0x2)/Sata(0x0,0xFFFF,0x0)
 BdsDxe: starting Boot0002 "UEFI QEMU HARDDISK QM00001 " from PciRoot(0x0)/Pci(0x1F,0x2)/Sata(0x0,0xFFFF,0x0)
 Booting WasabiOS...
-image_handle: 00000000007E3C2718
+image_handle: 00000000007EBA6018
 efi_system_table: 0x000000007f9ee018
 image_base: 0x0000000140000000
 image_size: 0x00000000000DE000
@@ -23,12 +23,12 @@ image_size: 0x00000000000DE000
 [INFO] src/init.rs:79 : EfiMemoryDescriptor { memory_type: CONVENTIONAL_MEMORY, physical_start: 8421376, virtual_start: 0, number_of_pages: 3, attribute: 15 }
 [INFO] src/init.rs:79 : EfiMemoryDescriptor { memory_type: CONVENTIONAL_MEMORY, physical_start: 8437760, virtual_start: 0, number_of_pages: 4, attribute: 15 }
 [INFO] src/init.rs:79 : EfiMemoryDescriptor { memory_type: CONVENTIONAL_MEMORY, physical_start: 22020096, virtual_start: 0, number_of_pages: 502326, attribute: 15 }
-[INFO] src/init.rs:79 : EfiMemoryDescriptor { memory_type: CONVENTIONAL_MEMORY, physical_start: 2079678464, virtual_start: 0, number_of_pages: 9099, attribute: 15 }
-[INFO] src/init.rs:79 : EfiMemoryDescriptor { memory_type: CONVENTIONAL_MEMORY, physical_start: 2119262208, virtual_start: 0, number_of_pages: 1, attribute: 15 }
+[INFO] src/init.rs:79 : EfiMemoryDescriptor { memory_type: CONVENTIONAL_MEMORY, physical_start: 2079678464, virtual_start: 0, number_of_pages: 9095, attribute: 15 }
+[INFO] src/init.rs:79 : EfiMemoryDescriptor { memory_type: CONVENTIONAL_MEMORY, physical_start: 2119229440, virtual_start: 0, number_of_pages: 3, attribute: 15 }
 [INFO] src/init.rs:79 : EfiMemoryDescriptor { memory_type: CONVENTIONAL_MEMORY, physical_start: 2145386496, virtual_start: 0, number_of_pages: 154, attribute: 15 }
 [INFO] src/init.rs:79 : EfiMemoryDescriptor { memory_type: CONVENTIONAL_MEMORY, physical_start: 4294967296, virtual_start: 0, number_of_pages: 262144, attribute: 15 }
 [INFO] src/init.rs:79 : EfiMemoryDescriptor { memory_type: CONVENTIONAL_MEMORY, physical_start: 5369618432, virtual_start: 0, number_of_pages: 261922, attribute: 15 }
-[INFO] src/init.rs:82 : Total : 1037604 pages = 4053 MiB
+[INFO] src/init.rs:82 : Total : 1037602 pages = 4053 MiB
 [INFO] src/x86.rs:762: TSS64 created @ 0x17FF7FE80
 [INFO] src/x86.rs:837: Loading GDT @ 0x000000017FF7FE20
 [INFO] src/x86.rs:844: Loading TSS ( selector = 0x18 )
@@ -39,79 +39,51 @@ image_size: 0x00000000000DE000
 [INFO] src/pci.rs:185: (vendor: 0x1234, device: 0x1111)
 [INFO] src/pci.rs:185: (vendor: 0x8086, device: 0x10D3)
 [INFO] src/pci.rs:185: (vendor: 0x1B36, device: 0x000D)
-[INFO] src/xhci.rs:104: Xhci found at: /pci/bus/0x00/device/0x03/function/0x0)
-[INFO] src/xhci.rs:601: xhci: page_size = 4096
-[INFO] src/xhci.rs:603: xhci: original num_scratchpad_bufs = 0
-[INFO] src/xhci.rs:816: Starting xHC...
-[INFO] src/xhci.rs:818: xHC started running
+[INFO] src/xhci.rs:99 : Xhci found at: /pci/bus/0x00/device/0x03/function/0x0)
+[INFO] src/xhci.rs:447: xhci: page_size = 4096
+[INFO] src/xhci.rs:449: xhci: original num_scratchpad_bufs = 0
+[INFO] src/xhci.rs:662: Starting xHC...
+[INFO] src/xhci.rs:664: xHC started running
 [INFO] src/pci.rs:185: (vendor: 0x8086, device: 0x2918)
 [INFO] src/pci.rs:185: (vendor: 0x8086, device: 0x2922)
 [INFO] src/pci.rs:185: (vendor: 0x8086, device: 0x2930)
 [INFO] src/executor.rs:170: Starting global executor loop
 [INFO] src/executor.rs:95 : Executor starts running...
-[INFO] src/xhci.rs:115: xhci: cap_regs.MaxSlots = 64
-[INFO] src/xhci.rs:119: xhci: op_regs.USBSTS = 0
-[INFO] src/xhci.rs:123: xhci: rt_regs.MFINDEX = 614
-[INFO] src/xhci.rs:127: PORTSC: values for port 1..9
-[INFO] src/xhci.rs:131:     1: 0x000202A0
-[INFO] src/xhci.rs:131:     2: 0x000202A0
-[INFO] src/xhci.rs:131:     3: 0x000202A0
-[INFO] src/xhci.rs:131:     4: 0x000202A0
-[INFO] src/xhci.rs:131:     5: 0x00020EE1
-[INFO] src/xhci.rs:131:     6: 0x000202A0
-[INFO] src/xhci.rs:131:     7: 0x000202A0
-[INFO] src/xhci.rs:131:     8: 0x000202A0
-[INFO] src/xhci.rs:139: Sending No-Op command to test event ring...
-[INFO] src/xhci.rs:1314: No-Op command sent at index 0
-[INFO] src/xhci.rs:153: xhci: port 5 is connected
-[INFO] src/xhci.rs:289: xhci: resetting port 5
-[INFO] src/xhci.rs:291: xhci: port 5 has been reset
-[INFO] src/xhci.rs:293: xhci: port 5 is enabled
-[INFO] src/main.rs:63 : 100 hpet.main_counter = 31.301ms
-[INFO] src/main.rs:70 : 200 hpet.main_counter = 34.053ms
+[INFO] src/xhci.rs:110: xhci: cap_regs.MaxSlots = 64
+[INFO] src/xhci.rs:114: xhci: op_regs.USBSTS = 0
+[INFO] src/xhci.rs:118: xhci: rt_regs.MFINDEX = 600
+[INFO] src/xhci.rs:122: PORTSC: values for port 1..9
+[INFO] src/xhci.rs:126:     1: 0x000202A0
+[INFO] src/xhci.rs:126:     2: 0x000202A0
+[INFO] src/xhci.rs:126:     3: 0x000202A0
+[INFO] src/xhci.rs:126:     4: 0x000202A0
+[INFO] src/xhci.rs:126:     5: 0x00020EE1
+[INFO] src/xhci.rs:126:     6: 0x00020EE1
+[INFO] src/xhci.rs:126:     7: 0x000202A0
+[INFO] src/xhci.rs:126:     8: 0x000202A0
+[INFO] src/xhci.rs:134: Sending No-Op command to test event ring...
+[INFO] src/xhci.rs:1160: No-Op command sent at index 0
+[INFO] src/xhci.rs:148: xhci: port 6 is connected
+[INFO] src/xhci.rs:233: xhci: resetting port 6
+[INFO] src/xhci.rs:235: xhci: port 6 has been reset
+[INFO] src/xhci.rs:237: xhci: port 6 is enabled
+[INFO] src/main.rs:63 : 100 hpet.main_counter = 32.086ms
+[INFO] src/main.rs:70 : 200 hpet.main_counter = 35.603ms
 [INFO] src/main.rs:81 : Started to monitor serial port
-[INFO] src/xhci.rs:1056: unhandled event: GenericTrbEntry { data: Volatile { value: 83886080 }, option: Volatile { value: 16777216 }, control: Volatile { value: 34817 } }
-[INFO] src/xhci.rs:155: slot 1 is assigned for port 5
-[INFO] src/xhci.rs:157: AddressDeviceCommand succeeded
-[INFO] src/xhci.rs:159: Got a DeviceDescriptor: UsbDeviceDescriptor { desc_length: 18, desc_type: 1, version: 512, device_class: 0, device_subclass: 0, device_protocol: 0, max_packet_size: 64, vendor_id: 1575, product_id: 1, device_version: 0, manufacturer_idx: 1, product_idx: 4, serial_idx: 11, num_of_config: 1 }
-[INFO] src/xhci.rs:162: xhci: device detected: vid:pid = 0x0627:0x0001
-[INFO] src/xhci.rs:213: xhci: v/p/s = Some("QEMU")/Some("QEMU USB Keyboard")/Some("68284-0000:00:03.0-1")
-[INFO] src/xhci.rs:220: xhci: [Config(ConfigDescriptor { desc_length: 9, desc_type: 2, total_length: 34, num_of_interfaces: 1, config_value: 1, config_string_index: 8, attribute: 160, max_power: 50, _pinned: PhantomPinned }), Interface(InterfaceDescriptor { desc_length: 9, desc_type: 4, interface_number: 0, alt_setting: 0, num_of_endpoints: 1, interface_class: 3, interface_subclass: 1, interface_protocol: 1, interface_index: 0 }), Unknown { desc_len: 9, desc_type: 33 }, Endpoint(EndpointDescriptor { desc_length: 7, desc_type: 5, endpoint_address: 129, attributes: 3, max_packet_size: 8, interval: 7 })]
-[INFO] src/xhci.rs:276: usb_keyboard: key down: 4 = Char('a')
-[INFO] src/main.rs:63 : 101 hpet.main_counter = 2.033947s
-[INFO] src/main.rs:70 : 201 hpet.main_counter = 2.035595s
-[INFO] src/xhci.rs:278: usb_keyboard: key up: 4 = Char('a')
-[INFO] src/xhci.rs:276: usb_keyboard: key down: 4 = Char('a')
-[INFO] src/xhci.rs:278: usb_keyboard: key up: 4 = Char('a')
-[INFO] src/xhci.rs:276: usb_keyboard: key down: 22 = Char('s')
-[INFO] src/xhci.rs:278: usb_keyboard: key up: 22 = Char('s')
-[INFO] src/main.rs:63 : 102 hpet.main_counter = 4.035651s
-[INFO] src/main.rs:70 : 202 hpet.main_counter = 4.037255s
-[INFO] src/xhci.rs:276: usb_keyboard: key down: 7 = Char('d')
-[INFO] src/xhci.rs:278: usb_keyboard: key up: 7 = Char('d')
-[INFO] src/main.rs:63 : 103 hpet.main_counter = 6.037296s
-[INFO] src/main.rs:70 : 203 hpet.main_counter = 6.03891s
-[INFO] src/xhci.rs:276: usb_keyboard: key down: 14 = Char('k')
-[INFO] src/xhci.rs:278: usb_keyboard: key up: 14 = Char('k')
-[INFO] src/xhci.rs:276: usb_keyboard: key down: 18 = Char('o')
-[INFO] src/xhci.rs:278: usb_keyboard: key up: 18 = Char('o')
+[INFO] src/xhci.rs:902: unhandled event: GenericTrbEntry { data: Volatile { value: 100663296 }, option: Volatile { value: 16777216 }, control: Volatile { value: 34817 } }
+[INFO] src/xhci.rs:150: slot 1 is assigned for port 6
+[INFO] src/xhci.rs:152: AddressDeviceCommand succeeded
+[INFO] src/xhci.rs:154: Got a DeviceDescriptor: UsbDeviceDescriptor { desc_length: 18, desc_type: 1, version: 512, device_class: 0, device_subclass: 0, device_protocol: 0, max_packet_size: 64, vendor_id: 1575, product_id: 1, device_version: 0, manufacturer_idx: 1, product_idx: 3, serial_idx: 10, num_of_config: 1 }
+[INFO] src/xhci.rs:157: xhci: device detected: vid:pid = 0x0627:0x0001
+[INFO] src/xhci.rs:208: xhci: v/p/s = Some("QEMU")/Some("QEMU USB Tablet")/Some("28754-0000:00:03.0-2")
+[INFO] src/xhci.rs:215: xhci: [Config(ConfigDescriptor { desc_length: 9, desc_type: 2, total_length: 34, num_of_interfaces: 1, config_value: 1, config_string_index: 7, attribute: 160, max_power: 50, _pinned: PhantomPinned }), Interface(InterfaceDescriptor { desc_length: 9, desc_type: 4, interface_number: 0, alt_setting: 0, num_of_endpoints: 1, interface_class: 3, interface_subclass: 0, interface_protocol: 0, interface_index: 0 }), Unknown { desc_len: 9, desc_type: 33 }, Endpoint(EndpointDescriptor { desc_length: 7, desc_type: 5, endpoint_address: 129, attributes: 3, max_packet_size: 8, interval: 4 })]
+[INFO] src/xhci.rs:226: xhci: No available drivers...
+[INFO] src/executor.rs:103: Task completed: Task(src/xhci.rs:106): Ok(())
+[INFO] src/main.rs:63 : 101 hpet.main_counter = 2.035715s
+[INFO] src/main.rs:70 : 201 hpet.main_counter = 2.04169s
+[INFO] src/main.rs:63 : 102 hpet.main_counter = 4.041634s
+[INFO] src/main.rs:70 : 202 hpet.main_counter = 4.045939s
+[INFO] src/main.rs:63 : 103 hpet.main_counter = 6.043253s
+[INFO] src/main.rs:70 : 203 hpet.main_counter = 6.047494s
 [INFO] src/executor.rs:103: Task completed: Task(src/main.rs:90): Ok(())
 [INFO] src/executor.rs:103: Task completed: Task(src/main.rs:91): Ok(())
-[INFO] src/xhci.rs:276: usb_keyboard: key down: 12 = Char('i')
-[INFO] src/xhci.rs:278: usb_keyboard: key up: 12 = Char('i')
-[INFO] src/xhci.rs:276: usb_keyboard: key down: 24 = Char('u')
-[INFO] src/xhci.rs:278: usb_keyboard: key up: 24 = Char('u')
-[INFO] src/xhci.rs:276: usb_keyboard: key down: 51 = Char(':')
-[INFO] src/xhci.rs:278: usb_keyboard: key up: 51 = Char(':')
-[INFO] src/xhci.rs:276: usb_keyboard: key down: 52 = Unknown(52)
-[INFO] src/xhci.rs:278: usb_keyboard: key up: 52 = Unknown(52)
-[INFO] src/xhci.rs:276: usb_keyboard: key down: 51 = Char(':')
-[INFO] src/xhci.rs:278: usb_keyboard: key up: 51 = Char(':')
-[INFO] src/xhci.rs:276: usb_keyboard: key down: 52 = Unknown(52)
-[INFO] src/xhci.rs:278: usb_keyboard: key up: 52 = Unknown(52)
-[INFO] src/xhci.rs:276: usb_keyboard: key down: 20 = Char('q')
-[INFO] src/xhci.rs:278: usb_keyboard: key up: 20 = Char('q')
-[INFO] src/xhci.rs:276: usb_keyboard: key down: 20 = Char('q')
-[INFO] src/xhci.rs:278: usb_keyboard: key up: 20 = Char('q')
-[INFO] src/xhci.rs:276: usb_keyboard: key down: 20 = Char('q')
-[INFO] src/xhci.rs:278: usb_keyboard: key up: 20 = Char('q')
