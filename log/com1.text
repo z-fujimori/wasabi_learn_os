@@ -51,7 +51,7 @@ image_size: 0x00000000000DE000
 [INFO] src/executor.rs:95 : Executor starts running...
 [INFO] src/xhci.rs:110: xhci: cap_regs.MaxSlots = 64
 [INFO] src/xhci.rs:114: xhci: op_regs.USBSTS = 0
-[INFO] src/xhci.rs:118: xhci: rt_regs.MFINDEX = 600
+[INFO] src/xhci.rs:118: xhci: rt_regs.MFINDEX = 569
 [INFO] src/xhci.rs:122: PORTSC: values for port 1..9
 [INFO] src/xhci.rs:126:     1: 0x000202A0
 [INFO] src/xhci.rs:126:     2: 0x000202A0
@@ -67,8 +67,8 @@ image_size: 0x00000000000DE000
 [INFO] src/xhci.rs:233: xhci: resetting port 6
 [INFO] src/xhci.rs:235: xhci: port 6 has been reset
 [INFO] src/xhci.rs:237: xhci: port 6 is enabled
-[INFO] src/main.rs:63 : 100 hpet.main_counter = 32.086ms
-[INFO] src/main.rs:70 : 200 hpet.main_counter = 35.603ms
+[INFO] src/main.rs:63 : 100 hpet.main_counter = 30.133ms
+[INFO] src/main.rs:70 : 200 hpet.main_counter = 33.554ms
 [INFO] src/main.rs:81 : Started to monitor serial port
 [INFO] src/xhci.rs:902: unhandled event: GenericTrbEntry { data: Volatile { value: 100663296 }, option: Volatile { value: 16777216 }, control: Volatile { value: 34817 } }
 [INFO] src/xhci.rs:150: slot 1 is assigned for port 6
@@ -79,11 +79,11 @@ image_size: 0x00000000000DE000
 [INFO] src/xhci.rs:215: xhci: [Config(ConfigDescriptor { desc_length: 9, desc_type: 2, total_length: 34, num_of_interfaces: 1, config_value: 1, config_string_index: 7, attribute: 160, max_power: 50, _pinned: PhantomPinned }), Interface(InterfaceDescriptor { desc_length: 9, desc_type: 4, interface_number: 0, alt_setting: 0, num_of_endpoints: 1, interface_class: 3, interface_subclass: 0, interface_protocol: 0, interface_index: 0 }), Unknown { desc_len: 9, desc_type: 33 }, Endpoint(EndpointDescriptor { desc_length: 7, desc_type: 5, endpoint_address: 129, attributes: 3, max_packet_size: 8, interval: 4 })]
 [INFO] src/xhci.rs:226: xhci: No available drivers...
 [INFO] src/executor.rs:103: Task completed: Task(src/xhci.rs:106): Ok(())
-[INFO] src/main.rs:63 : 101 hpet.main_counter = 2.035715s
-[INFO] src/main.rs:70 : 201 hpet.main_counter = 2.04169s
-[INFO] src/main.rs:63 : 102 hpet.main_counter = 4.041634s
-[INFO] src/main.rs:70 : 202 hpet.main_counter = 4.045939s
-[INFO] src/main.rs:63 : 103 hpet.main_counter = 6.043253s
-[INFO] src/main.rs:70 : 203 hpet.main_counter = 6.047494s
+[INFO] src/main.rs:63 : 101 hpet.main_counter = 2.033385s
+[INFO] src/main.rs:70 : 201 hpet.main_counter = 2.034994s
+[INFO] src/main.rs:63 : 102 hpet.main_counter = 4.034991s
+[INFO] src/main.rs:70 : 202 hpet.main_counter = 4.036583s
+[INFO] src/main.rs:63 : 103 hpet.main_counter = 6.036616s
+[INFO] src/main.rs:70 : 203 hpet.main_counter = 6.038197s
 [INFO] src/executor.rs:103: Task completed: Task(src/main.rs:90): Ok(())
 [INFO] src/executor.rs:103: Task completed: Task(src/main.rs:91): Ok(())
