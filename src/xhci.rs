@@ -14,6 +14,7 @@ use crate::pci::BusDeviceFunction;
 use crate::pci::Pci;
 use crate::pci::VendorDeviceId;
 use crate::result::Result;
+use crate::tablet::start_usb_tablet;
 use crate::usb;
 use crate::volatile::Volatile;
 use crate::x86::busy_loop_hint;
@@ -216,6 +217,18 @@ impl PciXhciDriver {
                 if start_usb_keyboard(&xhc,
                     slot,
                     &mut ctrl_ep_ring,
+                    &descriptors,
+                )
+                .await
+                .is_ok()
+                {
+                    return Ok(());
+                }
+                if start_usb_tablet(
+                    &xhc,
+                    slot,
+                    &mut ctrl_ep_ring,
+                    &device_descriptor,
                     &descriptors,
                 )
                 .await
@@ -724,6 +737,34 @@ impl Controller {
                 SetupStageTrb::REQ_GET_DESCRIPTOR,
                 (desc_type as u16) << 8 | (desc_index as u16),
                 lang_id,
+                (buf.len() * size_of::<T>()) as u16,
+            )
+            .into(),
+        )?;
+        let trb_ptr_waiting =
+            ctrl_ep_ring.push(DataStageTrb::new_in(buf).into())?;
+        ctrl_ep_ring.push(StatusStageTrb::new_out().into())?;
+        self.notify_ep(slot, 1)?;
+        EventFuture::new_for_trb(&self.primary_event_ring, trb_ptr_waiting)
+            .await?
+            .transfer_result_ok()
+    }
+    pub async fn request_descriptor_for_interface<T: Sized>(
+        &self,
+        slot: u8,
+        ctrl_ep_ring: &mut CommandRing,
+        desc_type: usb::UsbDescriptorType,
+        desc_index: u8,
+        w_index: u16,
+        buf: Pin<&mut [T]>,
+    ) -> Result<()> {
+        ctrl_ep_ring.push(
+            SetupStageTrb::new(
+                SetupStageTrb::REQ_TYPE_DIR_DEVICE_TO_HOST
+                    | SetupStageTrb::REQ_TYPE_TO_INTERFACE,
+                SetupStageTrb::REQ_GET_DESCRIPTOR,
+                (desc_type as u16) << 8 | (desc_index as u16),
+                w_index,
                 (buf.len() * size_of::<T>()) as u16,
             )
             .into(),
