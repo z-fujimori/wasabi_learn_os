@@ -25,7 +25,7 @@ pub enum UsbDescriptorType {
     String = 3,
     Interface = 4,
     Endpoint = 5,
-    Report = 0x222,
+    Report = 0x22,
 }
 
 #[derive(Debug, Copy, Clone)]
