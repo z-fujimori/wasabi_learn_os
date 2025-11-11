@@ -39,51 +39,51 @@ image_size: 0x00000000000DE000
 [INFO] src/pci.rs:185: (vendor: 0x1234, device: 0x1111)
 [INFO] src/pci.rs:185: (vendor: 0x8086, device: 0x10D3)
 [INFO] src/pci.rs:185: (vendor: 0x1B36, device: 0x000D)
-[INFO] src/xhci.rs:99 : Xhci found at: /pci/bus/0x00/device/0x03/function/0x0)
-[INFO] src/xhci.rs:447: xhci: page_size = 4096
-[INFO] src/xhci.rs:449: xhci: original num_scratchpad_bufs = 0
-[INFO] src/xhci.rs:662: Starting xHC...
-[INFO] src/xhci.rs:664: xHC started running
+[INFO] src/xhci.rs:100: Xhci found at: /pci/bus/0x00/device/0x03/function/0x0)
+[INFO] src/xhci.rs:460: xhci: page_size = 4096
+[INFO] src/xhci.rs:462: xhci: original num_scratchpad_bufs = 0
+[INFO] src/xhci.rs:675: Starting xHC...
+[INFO] src/xhci.rs:677: xHC started running
 [INFO] src/pci.rs:185: (vendor: 0x8086, device: 0x2918)
 [INFO] src/pci.rs:185: (vendor: 0x8086, device: 0x2922)
 [INFO] src/pci.rs:185: (vendor: 0x8086, device: 0x2930)
 [INFO] src/executor.rs:170: Starting global executor loop
 [INFO] src/executor.rs:95 : Executor starts running...
-[INFO] src/xhci.rs:110: xhci: cap_regs.MaxSlots = 64
-[INFO] src/xhci.rs:114: xhci: op_regs.USBSTS = 0
-[INFO] src/xhci.rs:118: xhci: rt_regs.MFINDEX = 569
-[INFO] src/xhci.rs:122: PORTSC: values for port 1..9
-[INFO] src/xhci.rs:126:     1: 0x000202A0
-[INFO] src/xhci.rs:126:     2: 0x000202A0
-[INFO] src/xhci.rs:126:     3: 0x000202A0
-[INFO] src/xhci.rs:126:     4: 0x000202A0
-[INFO] src/xhci.rs:126:     5: 0x00020EE1
-[INFO] src/xhci.rs:126:     6: 0x00020EE1
-[INFO] src/xhci.rs:126:     7: 0x000202A0
-[INFO] src/xhci.rs:126:     8: 0x000202A0
-[INFO] src/xhci.rs:134: Sending No-Op command to test event ring...
-[INFO] src/xhci.rs:1160: No-Op command sent at index 0
-[INFO] src/xhci.rs:148: xhci: port 6 is connected
-[INFO] src/xhci.rs:233: xhci: resetting port 6
-[INFO] src/xhci.rs:235: xhci: port 6 has been reset
-[INFO] src/xhci.rs:237: xhci: port 6 is enabled
-[INFO] src/main.rs:63 : 100 hpet.main_counter = 30.133ms
-[INFO] src/main.rs:70 : 200 hpet.main_counter = 33.554ms
+[INFO] src/xhci.rs:111: xhci: cap_regs.MaxSlots = 64
+[INFO] src/xhci.rs:115: xhci: op_regs.USBSTS = 0
+[INFO] src/xhci.rs:119: xhci: rt_regs.MFINDEX = 607
+[INFO] src/xhci.rs:123: PORTSC: values for port 1..9
+[INFO] src/xhci.rs:127:     1: 0x000202A0
+[INFO] src/xhci.rs:127:     2: 0x000202A0
+[INFO] src/xhci.rs:127:     3: 0x000202A0
+[INFO] src/xhci.rs:127:     4: 0x000202A0
+[INFO] src/xhci.rs:127:     5: 0x00020EE1
+[INFO] src/xhci.rs:127:     6: 0x00020EE1
+[INFO] src/xhci.rs:127:     7: 0x000202A0
+[INFO] src/xhci.rs:127:     8: 0x000202A0
+[INFO] src/xhci.rs:135: Sending No-Op command to test event ring...
+[INFO] src/xhci.rs:1173: No-Op command sent at index 0
+[INFO] src/xhci.rs:149: xhci: port 6 is connected
+[INFO] src/xhci.rs:246: xhci: resetting port 6
+[INFO] src/xhci.rs:248: xhci: port 6 has been reset
+[INFO] src/xhci.rs:250: xhci: port 6 is enabled
+[INFO] src/main.rs:63 : 100 hpet.main_counter = 29.917ms
+[INFO] src/main.rs:70 : 200 hpet.main_counter = 32.761ms
 [INFO] src/main.rs:81 : Started to monitor serial port
-[INFO] src/xhci.rs:902: unhandled event: GenericTrbEntry { data: Volatile { value: 100663296 }, option: Volatile { value: 16777216 }, control: Volatile { value: 34817 } }
-[INFO] src/xhci.rs:150: slot 1 is assigned for port 6
-[INFO] src/xhci.rs:152: AddressDeviceCommand succeeded
-[INFO] src/xhci.rs:154: Got a DeviceDescriptor: UsbDeviceDescriptor { desc_length: 18, desc_type: 1, version: 512, device_class: 0, device_subclass: 0, device_protocol: 0, max_packet_size: 64, vendor_id: 1575, product_id: 1, device_version: 0, manufacturer_idx: 1, product_idx: 3, serial_idx: 10, num_of_config: 1 }
-[INFO] src/xhci.rs:157: xhci: device detected: vid:pid = 0x0627:0x0001
-[INFO] src/xhci.rs:208: xhci: v/p/s = Some("QEMU")/Some("QEMU USB Tablet")/Some("28754-0000:00:03.0-2")
-[INFO] src/xhci.rs:215: xhci: [Config(ConfigDescriptor { desc_length: 9, desc_type: 2, total_length: 34, num_of_interfaces: 1, config_value: 1, config_string_index: 7, attribute: 160, max_power: 50, _pinned: PhantomPinned }), Interface(InterfaceDescriptor { desc_length: 9, desc_type: 4, interface_number: 0, alt_setting: 0, num_of_endpoints: 1, interface_class: 3, interface_subclass: 0, interface_protocol: 0, interface_index: 0 }), Unknown { desc_len: 9, desc_type: 33 }, Endpoint(EndpointDescriptor { desc_length: 7, desc_type: 5, endpoint_address: 129, attributes: 3, max_packet_size: 8, interval: 4 })]
-[INFO] src/xhci.rs:226: xhci: No available drivers...
-[INFO] src/executor.rs:103: Task completed: Task(src/xhci.rs:106): Ok(())
-[INFO] src/main.rs:63 : 101 hpet.main_counter = 2.033385s
-[INFO] src/main.rs:70 : 201 hpet.main_counter = 2.034994s
-[INFO] src/main.rs:63 : 102 hpet.main_counter = 4.034991s
-[INFO] src/main.rs:70 : 202 hpet.main_counter = 4.036583s
-[INFO] src/main.rs:63 : 103 hpet.main_counter = 6.036616s
-[INFO] src/main.rs:70 : 203 hpet.main_counter = 6.038197s
+[INFO] src/xhci.rs:915: unhandled event: GenericTrbEntry { data: Volatile { value: 100663296 }, option: Volatile { value: 16777216 }, control: Volatile { value: 34817 } }
+[INFO] src/xhci.rs:151: slot 1 is assigned for port 6
+[INFO] src/xhci.rs:153: AddressDeviceCommand succeeded
+[INFO] src/xhci.rs:155: Got a DeviceDescriptor: UsbDeviceDescriptor { desc_length: 18, desc_type: 1, version: 512, device_class: 0, device_subclass: 0, device_protocol: 0, max_packet_size: 64, vendor_id: 1575, product_id: 1, device_version: 0, manufacturer_idx: 1, product_idx: 3, serial_idx: 10, num_of_config: 1 }
+[INFO] src/xhci.rs:158: xhci: device detected: vid:pid = 0x0627:0x0001
+[INFO] src/xhci.rs:209: xhci: v/p/s = Some("QEMU")/Some("QEMU USB Tablet")/Some("28754-0000:00:03.0-2")
+[INFO] src/xhci.rs:216: xhci: [Config(ConfigDescriptor { desc_length: 9, desc_type: 2, total_length: 34, num_of_interfaces: 1, config_value: 1, config_string_index: 7, attribute: 160, max_power: 50, _pinned: PhantomPinned }), Interface(InterfaceDescriptor { desc_length: 9, desc_type: 4, interface_number: 0, alt_setting: 0, num_of_endpoints: 1, interface_class: 3, interface_subclass: 0, interface_protocol: 0, interface_index: 0 }), Unknown { desc_len: 9, desc_type: 33 }, Endpoint(EndpointDescriptor { desc_length: 7, desc_type: 5, endpoint_address: 129, attributes: 3, max_packet_size: 8, interval: 4 })]
+[INFO] src/tablet.rs:30 : USB tablet found
+[INFO] src/executor.rs:103: Task completed: Task(src/xhci.rs:107): Ok(())
+[INFO] src/main.rs:63 : 101 hpet.main_counter = 2.032393s
+[INFO] src/main.rs:70 : 201 hpet.main_counter = 2.034328s
+[INFO] src/main.rs:63 : 102 hpet.main_counter = 4.033917s
+[INFO] src/main.rs:70 : 202 hpet.main_counter = 4.035662s
+[INFO] src/main.rs:63 : 103 hpet.main_counter = 6.035527s
+[INFO] src/main.rs:70 : 203 hpet.main_counter = 6.03708s
 [INFO] src/executor.rs:103: Task completed: Task(src/main.rs:90): Ok(())
 [INFO] src/executor.rs:103: Task completed: Task(src/main.rs:91): Ok(())
