@@ -1,6 +1,5 @@
 extern crate alloc;
 
-use crate::pin::IntoPinnedMutableSlice;
 use crate::result::Result;
 use crate::slice::Sliceable;
 use crate::xhci::CommandRing;
@@ -25,6 +24,7 @@ pub enum UsbDescriptorType {
     String = 3,
     Interface = 4,
     Endpoint = 5,
+    Hid = 0x21,
     Report = 0x22,
 }
 
@@ -33,6 +33,7 @@ pub enum UsbDescriptor {
     Config(ConfigDescriptor),
     Endpoint(EndpointDescriptor),
     Interface(InterfaceDescriptor),
+    Hid(HidDescriptor),
     Unknown { desc_len: u8, desc_type: u8 },
 }
 
@@ -56,7 +57,7 @@ pub struct UsbDeviceDescriptor {
     pub num_of_config: u8,
 }
 const _: () = assert!(size_of::<UsbDeviceDescriptor>() == 18);
-unsafe impl IntoPinnedMutableSlice for UsbDeviceDescriptor {}
+unsafe impl Sliceable for UsbDeviceDescriptor {}
 
 #[derive(Debug, Copy, Clone, Default)]
 #[allow(unused)]
@@ -82,7 +83,6 @@ impl ConfigDescriptor {
         self.config_value
     }
 }
-unsafe impl IntoPinnedMutableSlice for ConfigDescriptor {}
 unsafe impl Sliceable for ConfigDescriptor {}
 
 pub struct DescriptorIterator<'a> {
@@ -119,6 +119,9 @@ impl<'a> Iterator for DescriptorIterator<'a> {
                         EndpointDescriptor::copy_from_slice(buf).ok()?,
                     )
                 }
+                e if e == UsbDescriptorType::Hid as u8 => UsbDescriptor::Hid(
+                    HidDescriptor::copy_from_slice(buf).ok()?,
+                ),
                 _ => UsbDescriptor::Unknown {
                     desc_len,
                     desc_type,
@@ -145,7 +148,6 @@ pub struct InterfaceDescriptor {
     interface_index: u8,
 }
 const _: () = assert!(size_of::<InterfaceDescriptor>() == 9);
-unsafe impl IntoPinnedMutableSlice for InterfaceDescriptor {}
 unsafe impl Sliceable for InterfaceDescriptor {}
 impl InterfaceDescriptor {
     pub fn triple(&self) -> (u8, u8, u8) {
@@ -182,7 +184,6 @@ pub struct EndpointDescriptor {
     pub interval: u8,
 }
 const _: () = assert!(size_of::<EndpointDescriptor>() == 7);
-unsafe impl IntoPinnedMutableSlice for EndpointDescriptor {}
 unsafe impl Sliceable for EndpointDescriptor {}
 
 // [hid_1_11]:
@@ -198,17 +199,18 @@ pub async fn request_device_descriptor(
     slot: u8,
     ctrl_ep_ring: &mut CommandRing,
 ) -> Result<UsbDeviceDescriptor> {
-    let mut desc = Box::pin(UsbDeviceDescriptor::default());
+    let buf = vec![0; size_of::<UsbDeviceDescriptor>()];
+    let mut buf = Box::into_pin(buf.into_boxed_slice());
     xhc.request_descriptor(
         slot,
         ctrl_ep_ring,
         UsbDescriptorType::Device,
         0,
         0,
-        desc.as_mut().as_mut_slice(),
+        &mut buf,
     )
     .await?;
-    Ok(*desc)
+    UsbDeviceDescriptor::copy_from_slice(buf.as_ref().get_ref())
 }
 pub async fn request_string_descriptor(
     xhc: &Rc<Controller>,
@@ -225,7 +227,7 @@ pub async fn request_string_descriptor(
         UsbDescriptorType::String,
         index,
         lang_id,
-        buf.as_mut(),
+        &mut buf,
     )
     .await?;
     Ok(String::from_utf8_lossy(&buf[2..])
@@ -237,7 +239,7 @@ pub async fn request_string_descriptor_zero(
     xhc: &Rc<Controller>,
     slot: u8,
     ctrl_ep_ring: &mut CommandRing,
-) -> Result<Vec<u16>> {
+) -> Result<Vec<u8>> {
     let buf = vec![0; 8];
     let mut buf = Box::into_pin(buf.into_boxed_slice());
     xhc.request_descriptor(
@@ -246,7 +248,7 @@ pub async fn request_string_descriptor_zero(
         UsbDescriptorType::String,
         0,
         0,
-        buf.as_mut(),
+        &mut buf,
     )
     .await?;
     Ok(buf.as_ref().get_ref().to_vec())
@@ -256,16 +258,19 @@ pub async fn request_config_descriptor_and_rest(
     slot: u8,
     ctrl_ep_ring: &mut CommandRing,
 ) -> Result<Vec<UsbDescriptor>> {
-    let mut config_descriptor = Box::pin(ConfigDescriptor::default());
+    let buf = vec![0u8; size_of::<ConfigDescriptor>()];
+    let mut buf = Box::into_pin(buf.into_boxed_slice());
     xhc.request_descriptor(
         slot,
         ctrl_ep_ring,
         UsbDescriptorType::Config,
         0,
         0,
-        config_descriptor.as_mut().as_mut_slice(),
+        &mut buf,
     )
     .await?;
+    let config_descriptor =
+        ConfigDescriptor::copy_from_slice(buf.as_ref().get_ref())?;
     let buf = vec![0; config_descriptor.total_length()];
     let mut buf = Box::into_pin(buf.into_boxed_slice());
     xhc.request_descriptor(
@@ -274,7 +279,7 @@ pub async fn request_config_descriptor_and_rest(
         UsbDescriptorType::Config,
         0,
         0,
-        buf.as_mut(),
+        &mut buf,
     )
     .await?;
     let iter = DescriptorIterator::new(&buf);
@@ -286,9 +291,9 @@ pub async fn request_hid_report(
     slot: u8,
     ctrl_ep_ring: &mut CommandRing,
 ) -> Result<Vec<u8>> {
-    let buf = [0u8; 8];
-    let mut buf = Box::into_pin(Box::new(buf));
-    xhc.request_report_bytes(slot, ctrl_ep_ring, buf.as_mut())
+    let buf = vec![0u8; 8];
+    let mut buf = Box::into_pin(buf.into_boxed_slice());
+    xhc.request_report_bytes(slot, ctrl_ep_ring, &mut buf)
         .await?;
     Ok(buf.to_vec())
 }
@@ -296,14 +301,10 @@ pub async fn request_hid_report(
 pub fn pick_interface_with_triple(
     descriptors: &Vec<UsbDescriptor>,
     triple: (u8, u8, u8),
-) -> Option<(
-    ConfigDescriptor,
-    InterfaceDescriptor,
-    Vec<EndpointDescriptor>,
-)> {
+) -> Option<(ConfigDescriptor, InterfaceDescriptor, Vec<UsbDescriptor>)> {
     let mut config: Option<ConfigDescriptor> = None;
     let mut interface: Option<InterfaceDescriptor> = None;
-    let mut ep_list: Vec<EndpointDescriptor> = Vec::new();
+    let mut desc_list: Vec<UsbDescriptor> = Vec::new();
     for d in descriptors {
         match d {
             UsbDescriptor::Config(e) => {
@@ -311,21 +312,23 @@ pub fn pick_interface_with_triple(
                     break;
                 }
                 config = Some(*e);
-                ep_list.clear();
+                desc_list.clear();
             }
             UsbDescriptor::Interface(e) => {
                 if triple == e.triple() {
                     interface = Some(*e)
                 }
             }
-            UsbDescriptor::Endpoint(e) => {
-                ep_list.push(*e);
+            e => {
+                if interface.is_some() {
+                    desc_list.push(*e)
+                }
             }
             _ => {}
         }
     }
     if let (Some(config), Some(interface)) = (config, interface) {
-        Some((config, interface, ep_list))
+        Some((config, interface, desc_list))
     } else {
         None
     }
@@ -335,9 +338,10 @@ pub async fn request_hid_report_descriptor(
     slot: u8,
     ctrl_ep_ring: &mut CommandRing,
     interface_number: u8,
+    desc_size: usize,
 ) -> Result<Vec<u8>> {
     // 7.1.1 Get_Descriptor Request
-    let buf = vec![0; 4096];
+    let buf = vec![0u8; desc_size];
     let mut buf = Box::into_pin(buf.into_boxed_slice());
     xhc.request_descriptor_for_interface(
         slot,
@@ -345,8 +349,22 @@ pub async fn request_hid_report_descriptor(
         UsbDescriptorType::Report,
         0,
         interface_number.into(),
-        buf.as_mut(),
+        &mut buf,
     )
     .await?;
-    Ok(buf.to_vec())
+    Ok((*buf).to_vec())
 }
+#[derive(Debug, Copy, Clone, Default)]
+#[allow(unused)]
+#[repr(packed)]
+pub struct HidDescriptor {
+    desc_length: u8,
+    desc_type: u8,
+    hid_release: u16,
+    country_code: u8,
+    num_descriptors: u8,
+    descriptor_type: u8,
+    pub report_descriptor_length: u16,
+}
+const _: () = assert!(size_of::<HidDescriptor>() == 9);
+unsafe impl Sliceable for HidDescriptor {}
