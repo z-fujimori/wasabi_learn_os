@@ -1,2 +1,5 @@
 /target
-mnt/
+/mnt
+/log
+/generated
+/noli
